@@ -1,0 +1,8 @@
+.google-login-container {
+    display: flex;
+    justify-content: right;
+    padding-left: 100px;
+width: 300px;
+  align-items: center;
+  background-color: #ffffff; /* light background */
+}

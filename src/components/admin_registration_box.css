@@ -1,0 +1,54 @@
+.admin-box {
+  background-color: rgb(255, 255, 255);
+  color: rgb(0, 0, 0);
+  padding: 3px 40px;
+  border-radius: 15px;
+  margin: 20px 20px 20px 20px;
+  position: relative;
+  font-size: 18px;
+}
+.admin-box .p{
+  font-weight: bold;
+}
+
+/* Buttons container aligned to top-right */
+.button-group {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Button style */
+.approve-btn{
+  width: 200px;
+  height: 60px;
+  border-radius: 15px;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  border: none;
+  font-weight: bold;
+
+}
+.approve-btn:hover {
+  background-color: rgb(0, 221, 22);
+  color: black;
+  transition: all 0.3s ease-in-out;
+}
+.reject-btn {
+  width: 200px;
+  height: 60px;
+  border-radius: 15px;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+.reject-btn:hover{
+  background-color: rgb(210, 0, 0);
+  color: black;
+  transition: all 0.3s ease-in-out;
+}

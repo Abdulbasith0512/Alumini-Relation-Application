@@ -1,0 +1,148 @@
+/* Reset default spacing */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Gothic A1', sans-serif;
+}
+
+.navbar {
+  height: auto;
+  position: relative;
+  background: white;
+  background-repeat: repeat;
+  background-size: cover;
+  color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  z-index: 1;
+  box-shadow: 0 4px 6px rgba(188, 27, 209, 0.494);
+}
+
+/* Brand */
+.brand h1 {
+  color: black;
+  font-size: 30px;
+  margin: 0;
+}
+
+/* Navigation */
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Nav buttons */
+.nav-libtn {
+  background-color: transparent;
+  border: none;
+  color: black;
+  font-size: 18px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+  transition: transform 0.3s ease;
+  font-family: 'Gothic A1', sans-serif;
+}
+
+.nav-libtn::before {
+  content: '';
+  position: absolute;
+  top: var(--y, 50%);
+  left: var(--x, 50%);
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, #5500ff70, #ffffff);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.nav-libtn:hover::before {
+  opacity: 1;
+}
+
+.nav-libtn:hover {
+  transform: scale(1.05);
+}
+
+/* User Profile Section */
+.user-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar img.nav-profile-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: 600;
+  color: black;
+}
+
+/* Logout Button */
+.login-user-logout {
+  width: 120px;
+  background-color: black;
+  border: 2px solid white;
+  color: white;
+  font-size: 16px;
+  padding: 6px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 15px;
+  font-family: 'Gothic A1', sans-serif;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.login-user-logout:hover {
+  background-color: red;
+  transform: scale(1.05);
+}
+.user-profile-box {
+  background-color: black;
+  padding: 8px 14px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+
+  height: 35px;
+  gap: 5px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name {
+  color: white;
+  font-weight: 600;
+}
+
+.nav-profile-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}

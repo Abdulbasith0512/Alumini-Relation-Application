@@ -1,0 +1,15 @@
+.events-page {
+  background-color: #ffffff;
+  height: 100vh;                /* Take full viewport height */
+  overflow-y: auto;             /* Enable vertical scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+.events-grid {
+  display: flex;
+  flex-direction: column;       /* Stack EventCards vertically */
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: transparent;
+}

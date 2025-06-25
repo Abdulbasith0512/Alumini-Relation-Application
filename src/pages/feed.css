@@ -1,0 +1,15 @@
+.posts-feed {
+  background-color: #ffffff;
+                /* Take full viewport height */
+  overflow-y: auto;             /* Enable vertical scrolling */
+  display: flex;
+  flex-direction: column;
+}
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 fixed columns */
+  gap: 10px;
+  padding: 10px;
+  background-color: transparent;
+  justify-items: center;
+}

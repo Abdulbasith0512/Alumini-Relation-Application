@@ -1,0 +1,212 @@
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/user_navbar.jsx";
+import PostCard from "../components/postcard.jsx";
+import EventCard from "../components/eventscard.jsx";
+import "./home_user_final.css";
+import axios from "axios";
+
+function HomeUserDashboard() {
+  const [user, setUser] = useState(null);
+  const [editableInfo, setEditableInfo] = useState({});
+  const [editing, setEditing] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [enrolledEvents, setEnrolledEvents] = useState([]);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      fetchUserDetails(parsedUser._id);
+      fetchUserPosts(parsedUser._id);
+      fetchEnrolledEvents(parsedUser._id);
+    }
+  }, []);
+
+  const fetchUserDetails = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:3001/users/${id}`);
+      setEditableInfo(res.data);
+    } catch (err) {
+      console.error("Error fetching user info", err);
+    }
+  };
+
+  const fetchUserPosts = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:3001/posts/user/${id}`);
+      setPosts(res.data);
+    } catch (err) {
+      console.error("Error fetching user posts", err);
+    }
+  };
+
+  const fetchEnrolledEvents = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:3001/events/enrolled/${id}`);
+      setEnrolledEvents(res.data);
+    } catch (err) {
+      console.error("Error fetching enrolled events", err);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditableInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setEditableInfo((prev) => ({
+        ...prev,
+        profilePhotoFile: file,
+        profilePhotoPreview: previewUrl,
+      }));
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      Object.entries(editableInfo).forEach(([key, value]) => {
+        if (key !== "profilePhotoFile" && key !== "profilePhotoPreview") {
+          formData.append(key, value);
+        }
+      });
+
+      if (editableInfo.profilePhotoFile) {
+        formData.append("profilePhoto", editableInfo.profilePhotoFile);
+      }
+
+      const response = await axios.put(
+        `http://localhost:3001/users/${user._id}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      alert("Profile updated!");
+      setEditing(false);
+
+      const updatedUser = {
+        ...user,
+        profilePhoto: response.data.user.profilePhoto || editableInfo.profilePhoto,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      fetchUserDetails(user._id);
+    } catch (err) {
+      console.error("Failed to update user", err);
+      alert("Update failed!");
+    }
+  };
+
+  return (
+    <div className="user-dashboard-container">
+      <Navbar />
+
+      {/* Hero Section */}
+      <div className="hero-section">
+        <div className="hero-text">
+          <h2>
+            Welcome Back, <span className="highlight">{user?.name || "User"}</span>
+          </h2>
+          <p>
+            {editableInfo.bio ||
+              "This user hasn't added a bio yet. Click edit to personalize your profile."}
+          </p>
+          <button className="edit-profile-btn" onClick={() => setEditing(!editing)}>
+            {editing ? "Cancel" : "Edit your Profile"}
+          </button>
+        </div>
+        <div className="hero-image-container">
+          <img
+            className="profile-photo"
+            src={
+              editableInfo?.profilePhoto
+                ? `http://localhost:3001/uploads/${editableInfo.profilePhoto}`
+                : "/default-profile.png"
+            }
+            alt={user?.name || "Profile photo"}
+          />
+        </div>
+      </div>
+
+      {/* Posts Section */}
+      <div className="posts-section">
+        <h3 className="section-title">Your Posts:</h3>
+        <div className="posts-grid">
+          {posts.length > 0 ? (
+            posts.map((post, i) => (
+              <PostCard
+                key={i}
+                name={user.name}
+                imageSrc={`http://localhost:3001/uploads/${post.photo}`}
+                content={post.bio}
+              />
+            ))
+          ) : (
+            <p style={{ color: "white" }}>No posts yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Enrolled Events Section */}
+      <div className="personal-info-section">
+        <h3>Enrolled Events:</h3>
+        <div className="posts-grid">
+          {enrolledEvents.length > 0 ? (
+            enrolledEvents.map((event) => (
+              <EventCard key={event._id} event={event} showEnroll={false} />
+            ))
+          ) : (
+            <p>No enrolled events yet.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Personal Info Section */}
+      <div className="personal-info-section">
+        <h3>Personal Information:</h3>
+        <form className="info-grid" encType="multipart/form-data">
+          {[
+            { name: "name", label: "Name" },
+            { name: "C_reg", label: "College Registration ID" },
+            { name: "email", label: "Email ID" },
+            { name: "M_number", label: "Mobile Number" },
+            { name: "address", label: "Address" },
+            { name: "batchYear", label: "Batch Year" },
+            { name: "department", label: "Department" },
+            { name: "jobTitle", label: "Job Title" },
+            { name: "company", label: "Company" },
+            { name: "linkedin", label: "LinkedIn" },
+            { name: "github", label: "GitHub" },
+            { name: "bio", label: "Bio" },
+          ].map((field) => (
+            <input
+              key={field.name}
+              name={field.name}
+              placeholder={field.label}
+              value={editableInfo[field.name] || ""}
+              onChange={handleChange}
+              readOnly={!editing}
+            />
+          ))}
+        </form>
+
+        {editing && (
+          <>
+            <label style={{ marginTop: "1rem" }}>Upload New Profile Photo:</label>
+            <input type="file" name="profilePhoto" onChange={handleFileChange} />
+            <button className="save-btn" onClick={handleSave}>
+              Save Changes
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default HomeUserDashboard;

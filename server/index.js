@@ -301,7 +301,17 @@ app.delete("/posts/:postId", async (req, res) => {
 
 // --------------------------- EVENTS ---------------------------
 
-app.post('/events', upload.single('image'), async (req, res) => {
+
+/* auto‑deactivate past events every 24 h */
+setInterval(async () => {
+  await Event.updateMany(
+    { date: { $lt: new Date() }, status: "active" },
+    { $set: { status: "inactive" } }
+  );
+}, 1000 * 60 * 60 * 24); // 24 h
+
+/* CREATE event */
+app.post("/events", upload.single("image"), async (req, res) => {
   const { title, description, date, location } = req.body;
   const image = req.file?.filename;
   if (!title || !description || !date || !location || !image)
@@ -310,73 +320,98 @@ app.post('/events', upload.single('image'), async (req, res) => {
   try {
     const event = await Event.create({ title, description, date, location, image });
     res.json({ message: "Event created", event });
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: "Failed to create event" });
   }
 });
 
-app.get('/events', async (_, res) => {
+/* LIST events
+   - default: only “active”
+   - add ?includePast=true to get everything (active + inactive) */
+app.get("/events", async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
+    const includePast = req.query.includePast === "true";
+    const filter = includePast ? {} : { status: "active" };
+    const events = await Event.find(filter).sort({ date: 1 });
     res.json(events);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: "Failed to fetch events" });
   }
 });
 
-app.get('/events/:eventId', async (req, res) => {
+/* GET single event */
+app.get("/events/:eventId", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
+    if (!event) return res.status(404).json({ error: "Event not found" });
     res.json(event);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch event' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch event" });
   }
 });
 
-app.post('/events/:eventId/enroll', async (req, res) => {
+/* ENROLL user in event */
+app.post("/events/:eventId/enroll", async (req, res) => {
   const { userId } = req.body;
   try {
     const event = await Event.findById(req.params.eventId);
-    if (!event) return res.status(404).json({ error: 'Event not found' });
+    if (!event) return res.status(404).json({ error: "Event not found" });
 
     if (event.enrolledUsers.includes(userId))
-      return res.status(400).json({ error: 'Already enrolled' });
+      return res.status(400).json({ error: "Already enrolled" });
 
     event.enrolledUsers.push(userId);
     await event.save();
-    res.json({ message: 'Enrolled successfully' });
-  } catch {
-    res.status(500).json({ error: 'Enrollment failed' });
+    res.json({ message: "Enrolled successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Enrollment failed" });
   }
 });
 
-app.get('/events/:eventId/enrolled-users', async (req, res) => {
+/* ROSTER for an event */
+app.get("/events/:eventId/enrolled-users", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
-      .populate('enrolledUsers', 'name email');
-    if (!event) return res.status(404).json({ error: 'Event not found' });
+      .populate("enrolledUsers", "name email");
+    if (!event) return res.status(404).json({ error: "Event not found" });
     res.json({ users: event.enrolledUsers });
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch enrolled users' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch enrolled users" });
   }
 });
 
-app.get('/events/not-enrolled/:userId', async (req, res) => {
+/* EVENTS current user is NOT enrolled in */
+app.get("/events/not-enrolled/:userId", async (req, res) => {
   try {
     const events = await Event.find({ enrolledUsers: { $ne: req.params.userId } });
     res.json(events);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch events' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch events" });
   }
 });
 
-app.get('/events/enrolled/:userId', async (req, res) => {
+/* EVENTS current user IS enrolled in */
+app.get("/events/enrolled/:userId", async (req, res) => {
   try {
     const events = await Event.find({ enrolledUsers: req.params.userId });
     res.json(events);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch enrolled events' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch enrolled events" });
+  }
+});
+
+/* DELETE event  (also removes image file) */
+app.delete("/events/:eventId", async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    if (event.image) {
+      await fs.unlink(`uploads/${event.image}`).catch(() => {});
+    }
+    res.json({ message: "Event deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete event" });
   }
 });
 
@@ -517,8 +552,14 @@ function mapRow(r) {
   };
 }
 
+
+
+// GET /events/:eventId/enrollments
+
+
 // --------------------------- START SERVER ---------------------------
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
+// GET /events/:id/enrollments  ➜  list everyone enrolled in an event

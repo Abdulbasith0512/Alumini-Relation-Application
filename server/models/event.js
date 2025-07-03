@@ -1,16 +1,13 @@
-// server/models/eventModel.js
 const mongoose = require("mongoose");
 
 const eventSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  date: Date,
-  location: String,
-  status: { type: String, default: "active" },
-  image: String,
-
-  // 👇 Add this field to track enrolled users
-  enrolledUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  title:       { type: String, required: true },
+  description: { type: String, required: true, maxlength: 500 },
+  date:        { type: Date, required: true, min: new Date() },
+  location:    { type: String, required: true, trim: true },
+  status:      { type: String, enum: ["active", "inactive"], default: "active" },
+  image:       { type: String },
+  enrolledUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 }, {
   timestamps: true
 });

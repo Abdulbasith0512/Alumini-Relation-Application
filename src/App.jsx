@@ -30,6 +30,7 @@ import AdminUsers from './pages/admin_users';
 import Adminfeed from './pages/admin_feed';
 import SuperAdminlogin from './pages/super_admin_login';
 import SuperAdminDashboard from './pages/super_admin_dashboard';
+import AdminEvents from './pages/admin_events';
 
 
 
@@ -65,6 +66,7 @@ function App() {
   <Route path="/" element={<ConditionalRoute />} />
  <Route path="/super-admin-login" element={<SuperAdminlogin />} /> 
  <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+<Route path="/admin-events" element={<AdminEvents />} /> 
   <Route path="/login" element={<LoginPage />} />
   <Route path="/signup" element={<SignupPage />} />
   <Route path="/admin-login" element={<AdminloginPage />} />

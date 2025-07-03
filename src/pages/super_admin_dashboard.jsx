@@ -22,7 +22,7 @@ Chart.register(
   BarElement
 );
 
-export default function AdminDashboard() {
+export default function SuperAdminDashboard() {
   /* ---------- local state ---------- */
   const [stats, setStats] = useState({ accepted: 0, registered: 0, members: 0 });
   const [branchChartData, setBranchChartData] = useState(null);
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
       <Navbar />
 
       <div className="admin-dashboard">
-        <h1>Welcome to Admin Dashboard</h1>
+        <h1>Welcome to Super Admin Dashboard</h1>
 
         {/* ---------- charts row -------------------------------------- */}
         <div className="chart-row">

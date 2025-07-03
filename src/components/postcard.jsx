@@ -1,7 +1,15 @@
 import React from 'react';
 import './postcard.css';
 
-function PostCard({ name, imageSrc, content, likes = 0, comments = 0 }) {
+function PostCard({
+  name,
+  imageSrc,
+  content,
+  likes = 0,
+  comments = 0,
+  onDelete,
+  onNotify,
+}) {
   return (
     <div className="post-card">
       <h2 className="post-author">{name}</h2>
@@ -22,6 +30,22 @@ function PostCard({ name, imageSrc, content, likes = 0, comments = 0 }) {
       </div>
 
       <p className="post-content">{content}</p>
+
+      {/* Admin Controls */}
+      {(onDelete || onNotify) && (
+        <div className="admin-actions">
+          {onNotify && (
+            <button className="notify-btn" onClick={onNotify}>
+              Send Notice
+            </button>
+          )}
+          {onDelete && (
+            <button className="delete-btn" onClick={onDelete}>
+              Delete Post
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

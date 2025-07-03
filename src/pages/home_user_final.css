@@ -129,36 +129,127 @@
 }
 
 /* === PERSONAL INFO SECTION === */
-.personal-info-section {
-  background-color: #fef5ff53;
-  padding: 50px 80px;
-  color: black;
+/* ---------- Personal-Info Card ---------- */
+.info-card {
+  background: #ffffff;
+
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  padding: 32px;
+
+  max-width: 1800px;
+  color: #333;
 }
 
-.personal-info-section h3 {
-  font-size: 25px;
-  font-weight: bold;
-  margin-bottom: 1rem;
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
+.info-header h3 {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.edit-toggle {
+  background: transparent;
+  color: #5a00b5;
+  padding: 10px 20px;
+  border: 2px solid #5a00b5;
+  width: 150px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.edit-toggle:hover { background: #5a00b5; color: #fff;}
+
+/* Grid of label/value pairs */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
+  gap: 20px 32px;
 }
 
-.info-grid input {
-  padding: 12px;
+/* Each field block */
+.info-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+.info-field input,
+.info-field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d0d0d0;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  color: #000;
+  font-size: 0.95rem;
+  transition: border 0.2s, box-shadow 0.2s;
 }
-body, html {
-  margin: 0;
-  padding: 0;
-  background-color: #fff; /* Or your preferred color like #fef5ff */
+.info-field input:focus,
+.info-field textarea:focus {
+  border-color: #0069ff;
+
+  outline: none;
 }
-.user-dashboard-container {
-  background-color: #fef5ff53 !important;
+
+/* Read-only view */
+.info-value {
+  display: block;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: #222;
+  border-bottom: 1px dashed #e1e1e1;
 }
+
+/* Upload row */
+.upload-row {
+  margin-top: 32px;
+}
+.upload-label {
+  display: inline-block;
+  font-weight: 600;
+  cursor: pointer;
+  color: #0069ff;
+}
+.upload-label input {
+  display: none;
+}
+
+/* Save / Cancel buttons */
+.action-row {
+padding-right: 200px;
+
+
+}
+.save-btn,
+.cancel-btn {
+  width: 150px;
+  height: 50px;
+
+  padding: 12px 0;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.25s;
+}
+.save-btn {
+  background: #28a745;
+  color: #fff;
+}
+.save-btn:hover {
+  background: #1f8737;
+}
+.cancel-btn {
+  background: #dee2e6;
+  color: #333;
+}
+.cancel-btn:hover {
+  background: #cfd4d8;
+}
+

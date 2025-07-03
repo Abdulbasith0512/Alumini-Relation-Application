@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import './AlertPage_user.css'; // You can reuse styles or separate if you want
-import Navbar from '../components/user_navbar'; // Assuming a user-specific navbar
+import './AlertPage_user.css';
+import Navbar from '../components/user_navbar';
 
 function UserAlertsPage() {
   const [alerts, setAlerts] = useState([]);
@@ -10,9 +10,16 @@ function UserAlertsPage() {
   }, []);
 
   const fetchAlerts = async () => {
-    const res = await fetch('http://localhost:3001/api/alerts');
-    const data = await res.json();
-    setAlerts(data);
+    const currentUserId = localStorage.getItem('userId');
+    if (!currentUserId) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/alerts?userId=${currentUserId}`);
+      const data = await res.json();
+      setAlerts(data);
+    } catch (err) {
+      console.error("Failed to fetch alerts:", err);
+    }
   };
 
   return (
@@ -26,7 +33,7 @@ function UserAlertsPage() {
           ) : (
             alerts.map((alert) => (
               <div key={alert._id} className="alert-card">
-                <h3>{alert.title}</h3>
+                <h3>{alert.title || "Notice"}</h3>
                 <p>{alert.message}</p>
               </div>
             ))

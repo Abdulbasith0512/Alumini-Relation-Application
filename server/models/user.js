@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const userSchema = new mongoose.Schema({
   name: String,
   C_reg: String,
@@ -12,6 +13,8 @@ const userSchema = new mongoose.Schema({
   address: String,
   batchYear: Number,
   department: String,
+  Branch_Location: String,
+  Membership_status: String, // Assuming this is a string, adjust if it's an object or array
   jobTitle: String,
   company: String,
   linkedin: String,

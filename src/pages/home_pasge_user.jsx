@@ -165,48 +165,87 @@ function HomeUserDashboard() {
           )}
         </div>
       </div>
+<section className="info-card">
+  <header className="info-header">
+    <h3>Personal Information</h3>
 
-      {/* Personal Info Section */}
-      <div className="personal-info-section">
-        <h3>Personal Information:</h3>
-        <form className="info-grid" encType="multipart/form-data">
-          {[
-            { name: "name", label: "Name" },
-            { name: "C_reg", label: "College Registration ID" },
-            { name: "email", label: "Email ID" },
-            { name: "M_number", label: "Mobile Number" },
-            { name: "address", label: "Address" },
-            { name: "batchYear", label: "Batch Year" },
-            { name: "department", label: "Department" },
-            { name: "jobTitle", label: "Job Title" },
-            { name: "company", label: "Company" },
-            { name: "linkedin", label: "LinkedIn" },
-            { name: "github", label: "GitHub" },
-            { name: "bio", label: "Bio" },
-          ].map((field) => (
-            <input
-              key={field.name}
+    {/* Edit / Cancel toggle */}
+    <button
+      className="edit-toggle"
+      onClick={() => setEditing(!editing)}
+    >
+      {editing ? 'Cancel' : 'Edit'}
+    </button>
+  </header>
+
+  {/* Grid of fields */}
+  <div className="info-grid">
+    {[
+      { name: 'name', label: 'Name' },
+      { name: 'C_reg', label: 'College Reg. ID' },
+      { name: 'email', label: 'Email' },
+      { name: 'M_number', label: 'Mobile' },
+      { name: 'address', label: 'Address' },
+      { name: 'batchYear', label: 'Batch Year' },
+      { name: 'department', label: 'Department' },
+      { name: 'jobTitle', label: 'Job Title' },
+      { name: 'company', label: 'Company' },
+      { name: 'linkedin', label: 'LinkedIn' },
+      { name: 'github', label: 'GitHub' },
+      { name: 'bio', label: 'Bio', textarea: true },
+    ].map((field) => (
+      <div key={field.name} className="info-field">
+        <label>{field.label}</label>
+
+        {/* read-only span OR editable input/textarea */}
+        {editing ? (
+          field.textarea ? (
+            <textarea
               name={field.name}
-              placeholder={field.label}
-              value={editableInfo[field.name] || ""}
+              value={editableInfo[field.name] || ''}
               onChange={handleChange}
-              readOnly={!editing}
+              rows={3}
             />
-          ))}
-        </form>
-
-        {editing && (
-          <>
-            <label style={{ marginTop: "1rem" }}>Upload New Profile Photo:</label>
-            <input type="file" name="profilePhoto" onChange={handleFileChange} />
-            <button className="save-btn" onClick={handleSave}>
-              Save Changes
-            </button>
-          </>
+          ) : (
+            <input
+              name={field.name}
+              value={editableInfo[field.name] || ''}
+              onChange={handleChange}
+            />
+          )
+        ) : (
+          <span className="info-value">
+            {editableInfo[field.name] || '—'}
+          </span>
         )}
       </div>
-    </div>
+    ))}
+  </div>
+
+  {/* Upload + Save buttons (only while editing) */}
+  {editing && (
+    <>
+      <div className="upload-row">
+        <label className="upload-label">
+          Upload new profile photo
+          <input type="file" onChange={handleFileChange} />
+        </label>
+      </div>
+
+      <div className="action-row">
+        <button onClick={handleSave} className="save-btn">
+          Save Changes
+        </button>
+        <button onClick={() => setEditing(false)} className="cancel-btn">
+          Cancel
+        </button>
+      </div>
+    </>
+  )}
+</section>
+</div>
+
+
   );
 }
-
 export default HomeUserDashboard;

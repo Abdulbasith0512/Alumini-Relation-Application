@@ -19,10 +19,12 @@ function Admin_registration_box({ user, onAction }) {
         <button className="reject-btn" onClick={handleReject}>Reject</button>
       </div>
       <h2>Name: {user.name}</h2>
-      <p>College Registration ID: {user.C_reg}</p>
-      <p>Email ID: {user.email}</p>
-      <p>Mobile Number: {user.M_number}</p>
-      <p>College Certificate: {user.C_certificate}</p>
+      <p><strong>Enrollment Number:</strong> {user.enrollmentNumber}</p>
+      <p><strong>Email:</strong> {user.email}</p>
+      <p><strong>Mobile Number:</strong> {user.mobileNumber}</p>
+      <p><strong>Degree:</strong> {user.degree}</p>
+      <p><strong>Batch Year:</strong> {user.batchYear}</p>
+
     </div>
   );
 }

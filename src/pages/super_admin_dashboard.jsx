@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/admin_navbar.jsx";
+import Navbar from "../components/super_admin_navbar.jsx";
 import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Chart,

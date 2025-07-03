@@ -44,7 +44,7 @@ function Navbar() {
             <li><Link to="/messages"><button className="nav-libtn" onMouseMove={handleMouseMove}>MESSAGES</button></Link></li>
             <li><Link to="/alert-page-user"><button className="nav-libtn" onMouseMove={handleMouseMove}>ALERTS</button></Link></li>
             <li><Link to="/gallery-page-user"><button className="nav-libtn" onMouseMove={handleMouseMove}>GALLERY</button></Link></li>
-            <li><Link to="/membership"><button className="nav-libtn" onMouseMove={handleMouseMove}>MEMBERSHIP</button></Link></li>
+            <li><Link to="/membership"><button className="nav-libtn" onMouseMove={handleMouseMove}>PREMIUM</button></Link></li>
           </ul>
         </nav>
 

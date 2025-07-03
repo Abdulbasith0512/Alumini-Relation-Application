@@ -15,7 +15,7 @@ function Navbar() {
             <li>NEWS</li>
             <li>JOBS</li>
             <li>COMMUNITY</li>
-            <li>MEMBERSHIP</li>
+            <li>PREMIUM</li>
           </ul>
         </nav>
         <div className="user-menu">

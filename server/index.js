@@ -19,7 +19,7 @@ const Post = require('./models/postmodel');
 const Event = require('./models/event');
 const Gallery = require('./models/gallery');
 const Alert = require('./models/alert');
-
+const SignupConfig = require('./models/SignupConfig');
 // MongoDB connection
 mongoose.connect("mongodb://127.0.0.1:27017/alumni_erp")
   .then(() => console.log("✅ MongoDB connected"))
@@ -119,23 +119,23 @@ app.post('/superadminlogin', async (req, res) => {
 });
 
 // --------------------------- REGISTRATION ---------------------------
-
-app.post('/register', upload.single('Profile_photo'), async (req, res) => {
-  const { name, enrollmentNumber, email, mobileNumber, otp, password, degree, batchYear } = req.body;
-  const file = req.file;
-  if (!file) return res.status(400).json({ error: 'No profile photo uploaded' });
-
+app.post('/register', upload.any(), async (req, res) => {
   try {
-    const user = await Register.create({
-      name, enrollmentNumber, email, mobileNumber, otp, password, degree, batchYear,
-      Profile_photo: file.filename
-    });
+    const data = { ...req.body };
+    if (req.files?.length) {
+      req.files.forEach(f => {
+        data[f.fieldname] = f.filename;
+      });
+    }
+    const user = await Register.create(data);
     res.json({ message: "Registration pending admin approval", user });
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: 'Registration failed' });
   }
 });
 
+// Get pending registrations
 app.get('/pending-registrations', async (_, res) => {
   try {
     const pendingUsers = await Register.find();
@@ -145,10 +145,11 @@ app.get('/pending-registrations', async (_, res) => {
   }
 });
 
+// Approve user
 app.post('/approve/:id', async (req, res) => {
   try {
-    const regUser = await Register.findById(req.params.id);
-    if (!regUser) return res.status(404).json({ error: 'User not found in registration list' });
+    const regUser = await Register.findById(req.params.id).lean();
+    if (!regUser) return res.status(404).json({ error: 'User not found' });
 
     const existing = await User.findOne({ email: regUser.email });
     if (existing) return res.status(400).json({ error: 'User already exists' });
@@ -162,17 +163,21 @@ app.post('/approve/:id', async (req, res) => {
       batchYear: regUser.batchYear,
       department: regUser.degree,
       profilePhoto: regUser.Profile_photo,
-      address: "", jobTitle: "", company: "", linkedin: "", github: "", bio: ""
+      address: "", jobTitle: "", company: "", linkedin: "", github: "", bio: "",
+      ...regUser, // custom fields
     });
 
     await newUser.save();
     await Register.findByIdAndDelete(req.params.id);
-    res.json({ message: 'User approved and moved to users collection' });
+
+    res.json({ message: 'User approved and added' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
+// Reject user
 app.delete('/reject/:id', async (req, res) => {
   try {
     await Register.findByIdAndDelete(req.params.id);
@@ -182,13 +187,88 @@ app.delete('/reject/:id', async (req, res) => {
   }
 });
 
+// Check if user is already registered
 app.get('/api/check-registers', async (req, res) => {
-  const { email } = req.query;
   try {
-    const exists = await Register.findOne({ email });
+    const exists = await Register.findOne({ email: req.query.email });
     res.json({ exists: !!exists });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+/* ───────── utils ───────── */
+async function getSignupConfig() {
+  // find one – if missing create with defaults in ONE atomic call
+  return await SignupConfig.findOneAndUpdate(
+    {},                          // filter
+    {},                          // no changes
+    { new: true, upsert: true }  // create if absent, return the doc
+  ).lean();                      // plain JS object (not Mongoose doc)
+}
+
+/* ───────── routes ───────── */
+
+// GET  /api/signup-config
+app.get('/api/signup-config', async (req, res) => {
+  try {
+    const cfg = await getSignupConfig();
+    res.json(cfg);
+  } catch (err) {
+    console.error('GET /api/signup-config', err);
+    res.status(500).json({ error: 'Failed to fetch signup config' });
+  }
+});
+
+// PUT  /api/signup-config   (replace entire config)
+app.put('/api/signup-config', async (req, res) => {
+  try {
+    const cfg = await SignupConfig.findOneAndUpdate({}, req.body, {
+      new: true,
+      upsert: true,      // create doc if first time
+    }).lean();
+    res.json({ message: 'Config updated', cfg });
+  } catch (err) {
+    console.error('PUT /api/signup-config', err);
+    res.status(500).json({ error: 'Failed to update signup config' });
+  }
+});
+
+// POST /api/signup-config/field   (add one custom field)
+app.post('/api/signup-config/field', async (req, res) => {
+  const { key, label, type = 'text', required = false } = req.body;
+  if (!key || !label)
+    return res.status(400).json({ error: 'key and label required' });
+
+  try {
+    // create config doc if it doesn’t exist
+    const cfg = await getSignupConfig();
+
+    if (
+      cfg.customFields?.some(
+        (f) => f.key.toLowerCase() === key.toLowerCase()
+      )
+    ) {
+      return res.status(400).json({ error: 'Field already exists' });
+    }
+
+    const updated = await SignupConfig.findOneAndUpdate(
+      {},
+      {
+        $push: {
+          customFields: { key, label, type, required, visible: true },
+        },
+      },
+      { new: true }
+    ).lean();
+
+    res.json({
+      message: 'Field added',
+      customFields: updated.customFields,
+    });
+  } catch (err) {
+    console.error('POST /api/signup-config/field', err);
+    res.status(500).json({ error: 'Could not add field' });
   }
 });
 

@@ -1,0 +1,199 @@
+/* ───── super_admin_signup.css ───── */
+
+.super-admin-container {
+  padding: 2rem;
+  max-width: 48rem;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+}
+
+.super-admin-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.super-admin-subheading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.super-admin-core-field,
+.super-admin-custom-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: #374151;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.super-admin-core-field input[type='checkbox'],
+.super-admin-custom-field input[type='checkbox'] {
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #3b82f6;
+  border-radius: 0.25rem;
+  display: grid;
+  place-content: center;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.super-admin-core-field input[type='checkbox']:checked,
+.super-admin-custom-field input[type='checkbox']:checked {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+}
+
+.super-admin-core-field input[type='checkbox']::before,
+.super-admin-custom-field input[type='checkbox']::before {
+  content: '\2713';
+  font-size: 0.9rem;
+  color: white;
+  transform: scale(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+.super-admin-core-field input[type='checkbox']:checked::before,
+.super-admin-custom-field input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+.super-admin-no-fields {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.super-admin-add-new {
+  margin-top: 2.5rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1.5rem;
+}
+
+.super-admin-add-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.super-admin-input,
+.super-admin-select {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  font-size: 0.95rem;
+}
+
+.super-admin-required-label {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.super-admin-btn {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease-in-out;
+}
+
+.super-admin-btn:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+
+.super-admin-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+.super-admin-save-btn:disabled {
+  background: #9ca3af !important;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.super-admin-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.super-admin-loading {
+  padding: 1rem;
+  font-style: italic;
+  color: #6b7280;
+  text-align: center;
+}
+.super-admin-save-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.super-admin-save-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.super-admin-save-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

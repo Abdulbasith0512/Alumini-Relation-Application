@@ -23,10 +23,10 @@ function Navbar() {
         <h1>Logo</h1>
         <nav>
           <ul>
-            <li><button className="nav-libtn" >DASHBOARD</button></li>
+            <li><button className="nav-libtn" onClick={() => navigate("/super-admin-dashboard")} >DASHBOARD</button></li>
             <li><button className="nav-libtn" >FEED</button></li>
             <li><button className="nav-libtn">EVENTS</button></li>
-            <li><button className="nav-libtn" >SIGNUP</button></li>
+            <li><button className="nav-libtn"onClick={() => navigate("/super-admin-signup")} >SIGNUP</button></li>
             <li><button className="nav-libtn" >GALLERY</button></li>
            <li><button className="nav-libtn" >USERS</button></li> 
             <li><button className="nav-libtn">PREMIUM PLANS</button></li>

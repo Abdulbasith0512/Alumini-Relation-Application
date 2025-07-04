@@ -120,7 +120,7 @@ export default function SuperAdminDashboard() {
       <Navbar />
 
       <div className="admin-dashboard">
-        <h1>Welcome to Admin Dashboard</h1>
+        <h1>Welcome to Super Admin Dashboard</h1>
 
         {/* ---------- charts row ---------------------------------- */}
         <div className="chart-row">

@@ -11,6 +11,7 @@ function HomeUserDashboard() {
   const [editing, setEditing] = useState(false);
   const [posts, setPosts] = useState([]);
   const [enrolledEvents, setEnrolledEvents] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -20,8 +21,18 @@ function HomeUserDashboard() {
       fetchUserDetails(parsedUser._id);
       fetchUserPosts(parsedUser._id);
       fetchEnrolledEvents(parsedUser._id);
+      fetchAppliedJobs(parsedUser._id); // ✅ This line was missing earlier
     }
   }, []);
+
+  const fetchAppliedJobs = async (idOrEmail) => {
+    try {
+      const res = await axios.get(`http://localhost:3001/applications/user/${idOrEmail}`);
+      setAppliedJobs(res.data);
+    } catch (err) {
+      console.error("Error fetching applied jobs", err);
+    }
+  };
 
   const fetchUserDetails = async (id) => {
     try {
@@ -165,87 +176,83 @@ function HomeUserDashboard() {
           )}
         </div>
       </div>
-<section className="info-card">
-  <header className="info-header">
-    <h3>Personal Information</h3>
 
-    {/* Edit / Cancel toggle */}
-    <button
-      className="edit-toggle"
-      onClick={() => setEditing(!editing)}
-    >
-      {editing ? 'Cancel' : 'Edit'}
-    </button>
-  </header>
+      {/* Info Section */}
+      <section className="info-card">
+        <header className="info-header">
+          <h3>Personal Information</h3>
+          <button className="edit-toggle" onClick={() => setEditing(!editing)}>
+            {editing ? "Cancel" : "Edit"}
+          </button>
+        </header>
 
-  {/* Grid of fields */}
-  <div className="info-grid">
-    {[
-      { name: 'name', label: 'Name' },
-      { name: 'C_reg', label: 'College Reg. ID' },
-      { name: 'email', label: 'Email' },
-      { name: 'M_number', label: 'Mobile' },
-      { name: 'address', label: 'Address' },
-      { name: 'batchYear', label: 'Batch Year' },
-      { name: 'department', label: 'Department' },
-      { name: 'jobTitle', label: 'Job Title' },
-      { name: 'company', label: 'Company' },
-      { name: 'linkedin', label: 'LinkedIn' },
-      { name: 'github', label: 'GitHub' },
-      { name: 'bio', label: 'Bio', textarea: true },
-    ].map((field) => (
-      <div key={field.name} className="info-field">
-        <label>{field.label}</label>
+        
 
-        {/* read-only span OR editable input/textarea */}
-        {editing ? (
-          field.textarea ? (
-            <textarea
-              name={field.name}
-              value={editableInfo[field.name] || ''}
-              onChange={handleChange}
-              rows={3}
-            />
-          ) : (
-            <input
-              name={field.name}
-              value={editableInfo[field.name] || ''}
-              onChange={handleChange}
-            />
-          )
-        ) : (
-          <span className="info-value">
-            {editableInfo[field.name] || '—'}
-          </span>
+        {/* Editable Fields Grid */}
+        <div className="info-grid">
+          {[
+            { name: 'name', label: 'Name' },
+            { name: 'C_reg', label: 'College Reg. ID' },
+            { name: 'email', label: 'Email' },
+            { name: 'M_number', label: 'Mobile' },
+            { name: 'address', label: 'Address' },
+            { name: 'batchYear', label: 'Batch Year' },
+            { name: 'department', label: 'Department' },
+            { name: 'jobTitle', label: 'Job Title' },
+            { name: 'company', label: 'Company' },
+            { name: 'linkedin', label: 'LinkedIn' },
+            { name: 'github', label: 'GitHub' },
+            { name: 'bio', label: 'Bio', textarea: true },
+          ].map((field) => (
+            <div key={field.name} className="info-field">
+              <label>{field.label}</label>
+              {editing ? (
+                field.textarea ? (
+                  <textarea
+                    name={field.name}
+                    value={editableInfo[field.name] || ''}
+                    onChange={handleChange}
+                    rows={3}
+                  />
+                ) : (
+                  <input
+                    name={field.name}
+                    value={editableInfo[field.name] || ''}
+                    onChange={handleChange}
+                  />
+                )
+              ) : (
+                <span className="info-value">
+                  {editableInfo[field.name] || '—'}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* File Upload + Save Buttons */}
+        {editing && (
+          <>
+            <div className="upload-row">
+              <label className="upload-label">
+                Upload new profile photo
+                <input type="file" onChange={handleFileChange} />
+              </label>
+            </div>
+
+            <div className="action-row">
+              <button onClick={handleSave} className="save-btn">
+                Save Changes
+              </button>
+              <button onClick={() => setEditing(false)} className="cancel-btn">
+                Cancel
+              </button>
+            </div>
+          </>
         )}
-      </div>
-    ))}
-  </div>
-
-  {/* Upload + Save buttons (only while editing) */}
-  {editing && (
-    <>
-      <div className="upload-row">
-        <label className="upload-label">
-          Upload new profile photo
-          <input type="file" onChange={handleFileChange} />
-        </label>
-      </div>
-
-      <div className="action-row">
-        <button onClick={handleSave} className="save-btn">
-          Save Changes
-        </button>
-        <button onClick={() => setEditing(false)} className="cancel-btn">
-          Cancel
-        </button>
-      </div>
-    </>
-  )}
-</section>
-</div>
-
-
+      </section>
+    </div>
   );
 }
+
 export default HomeUserDashboard;

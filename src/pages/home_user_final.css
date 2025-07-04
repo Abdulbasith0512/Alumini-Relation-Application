@@ -253,3 +253,33 @@ padding-right: 200px;
   background: #cfd4d8;
 }
 
+.applied-jobs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.applied-job-item {
+  background: #222;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.applied-job-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1rem;
+}
+
+.applied-job-details span {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}

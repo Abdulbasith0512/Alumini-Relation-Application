@@ -16,7 +16,7 @@ function ProfileUser() {
       </Link>
 
       <Link to="/membership">
-        <button className="membership-btn-custom">Membership</button>
+        <button className="membership-btn-custom">PREMIUM</button>
       </Link>
     </div>
   );

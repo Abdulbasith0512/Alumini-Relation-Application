@@ -31,6 +31,8 @@ import Adminfeed from './pages/admin_feed';
 import SuperAdminlogin from './pages/super_admin_login';
 import SuperAdminDashboard from './pages/super_admin_dashboard';
 import AdminEvents from './pages/admin_events';
+import CreateJob from './pages/create_job';
+import JobApplicationPage from './pages/JobApplicationPage';
 
 
 
@@ -67,11 +69,15 @@ function App() {
  <Route path="/super-admin-login" element={<SuperAdminlogin />} /> 
  <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 <Route path="/admin-events" element={<AdminEvents />} /> 
+<Route path="/createjob" element={<CreateJob />} />
   <Route path="/login" element={<LoginPage />} />
   <Route path="/signup" element={<SignupPage />} />
   <Route path="/admin-login" element={<AdminloginPage />} />
   <Route path="/admin-dashboard" element={<AdminDashboard />} />
   <Route path="/admin-registrations" element={<AdminRegistrations />} />
+<Route path="/job-apply/:jobId" element={<JobApplicationPage />} />
+
+
 </Routes>
         </Router>
       </AuthProvider>

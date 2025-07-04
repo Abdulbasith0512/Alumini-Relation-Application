@@ -8,6 +8,7 @@ const XLSX = require('xlsx');
 
 const app = express();
 const PORT = 3001;
+const Application = require("./models/Application");
 
 // MongoDB Models
 const Register = require('./models/register');
@@ -28,6 +29,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/alumni_erp")
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const Job = require("./models/job");
 
 // Multer Config
 const upload = multer({
@@ -553,9 +555,160 @@ function mapRow(r) {
 }
 
 
+// --------------------------- JOBS ---------------------------
+const logoStorage = multer.diskStorage({
+  destination: (_, __, cb) => cb(null, "uploads/logos"),
+  filename: (_, file, cb) =>
+    cb(null, `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`),
+});
 
-// GET /events/:eventId/enrollments
+const uploadLogo = multer({ storage: logoStorage });
+const resumeStorage = multer.diskStorage({
+  destination: (_, __, cb) => cb(null, "uploads/resumes"),
+  filename: (_, file, cb) =>
+    cb(null, `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`)
+});
 
+const uploadResume = multer({
+  storage: resumeStorage,
+  fileFilter: (_, file, cb) => {
+    // accept only PDFs
+    cb(null, file.mimetype === "application/pdf");
+  }
+});
+
+// CREATE a job
+app.post("/create-job", uploadLogo.single("logo"), async (req, res) => {
+  const { title, description, company, location, salary, userId } = req.body;
+  if (!title || !description || !company || !location || !userId)
+    return res.status(400).json({ error: "Missing required fields" });
+
+  try {
+    const job = await Job.create({
+      title,
+      description,
+      company,
+      location,
+      salary,
+      userId,
+      logo: req.file?.filename || null
+    });
+    res.status(201).json({ message: "Job posted", job });
+  } catch (err) {
+    console.error("Job create error:", err);
+    res.status(500).json({ error: "Failed to post job" });
+  }
+});
+
+// LIST all jobs
+app.get("/jobs", async (_, res) => {
+  try {
+    const jobs = await Job.find().sort({ createdAt: -1 }).populate("userId", "name");
+    res.json(jobs);
+  } catch {
+    res.status(500).json({ error: "Failed to fetch jobs" });
+  }
+});
+
+// GET one job
+app.get("/jobs/:id", async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id).populate("userId", "name");
+    if (!job) return res.status(404).json({ error: "Job not found" });
+    res.json(job);
+  } catch {
+    res.status(500).json({ error: "Failed to fetch job" });
+  }
+});
+
+// DELETE a job
+app.delete("/jobs/:jobId", async (req, res) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.jobId);
+    if (!job) return res.status(404).json({ error: "Job not found" });
+
+    if (job.logo) fs.unlink(`uploads/${job.logo}`, () => {});
+    res.json({ message: "Job deleted" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete job" });
+  }
+});
+
+// APPLY to a job
+/************************  APPLY to a job  ************************/
+app.post("/jobs/:jobId/apply", uploadResume.single("resume"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Resume (PDF) is required." });
+    if (!req.body.name || !req.body.email || !req.body.applicant)
+      return res.status(400).json({ error: "Name, email, and applicant ID are required." });
+
+    const job = await Job.findById(req.params.jobId);
+    if (!job) return res.status(404).json({ error: "Job not found" });
+
+    const application = await Application.create({
+      applicant: req.body.applicant,      // 👈 save ObjectId of user
+      job: job._id,
+      name: req.body.name,
+      email: req.body.email,
+      resume: req.file.filename
+    });
+
+    res.status(201).json({ message: "Application submitted", application });
+  } catch (err) {
+    console.error("Error applying for job:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+/**************  LIST applications for ONE USER  *****************/
+app.get("/applications/user/:userId", async (req, res) => {
+  try {
+    const apps = await Application.find({ applicant: req.params.userId }) // 👈 query by ObjectId
+      .populate("job", "title company location logo")
+      .sort({ appliedAt: -1 });
+
+    res.json(apps);
+  } catch (err) {
+    console.error("Error fetching user applications:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+// LIST applications
+app.get("/jobs/:jobId/applications", async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ error: "Invalid Job ID" });
+    }
+
+    const apps = await Application.find({ job: jobId }).sort({ appliedAt: -1 });
+    res.json(apps);
+  } catch (err) {
+    console.error("Error fetching applications:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+// routes/applications.js  (or in your main server file)
+
+// GET /applications/user/:userId   →  list jobs the user applied for
+app.get("/applications/user/:userId", async (req, res) => {
+  try {
+    const apps = await Application.find({ email: req.params.userId })  // or `applicantId` if you store an ObjectId
+      .populate("job", "title company location logo")
+      .sort({ appliedAt: -1 });
+
+    // If you store applicant as ObjectId ref:
+    // const apps = await Application.find({ applicant: req.params.userId })
+
+    res.json(apps);
+  } catch (err) {
+    console.error("Error fetching user applications:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // --------------------------- START SERVER ---------------------------
 

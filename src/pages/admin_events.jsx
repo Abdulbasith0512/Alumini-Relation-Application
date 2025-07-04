@@ -152,7 +152,7 @@ export default function AdminEvents() {
             accept="image/*"
             onChange={handleChange}
           />
-          <button type="submit">Create</button>
+          <button className="admin-event-button" type="submit">Create</button>
         </form>
 
         <h2>All Events</h2>
@@ -172,12 +172,12 @@ export default function AdminEvents() {
               />
             )}
 
-            <button onClick={() => toggleRoster(ev._id)}>
+            <button className="admin-event-button"onClick={() => toggleRoster(ev._id)}>
               {roster[ev._id] ? "Hide" : "View"} Enrollments ({
                 ev.enrolledUsers.length
               })
             </button>
-            <button onClick={() => remove(ev._id)}>Delete</button>
+            <button className="admin-event-button"onClick={() => remove(ev._id)}>Delete</button>
 
             {roster[ev._id] && (
               <ul className="rosterList">

@@ -1,27 +1,41 @@
+// JobCard.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import "./jobcard.css";
 
-function JobCard() {
+const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+function JobCard({ job }) {
   return (
     <div className="job-card">
+      {/* left column */}
       <div className="job-card-left">
-        <h2 className="job-title">JOB TITLE</h2>
-        <p className="job-poster">Posted by XYZ Person</p>
-        <p className="job-description">
-          TechTalk 2025 was a one-day seminar held on June 10, 2025, bringing together students,
-          developers, and industry experts to discuss the evolving landscape of artificial intelligence.
-          The event featured keynote sessions by leading tech professionals, hands-on workshops,
-          and a panel discussion on ethical AI practices. It concluded with a networking session,
-          fostering collaboration and innovation among attendees.
-        </p>
+        <h2 className="job-title">{job.title}</h2>
+        <p className="job-poster">Posted by {job.userId?.name || "Unknown"}</p>
+        <p className="job-company">{job.company}</p>
+        <p className="job-location">{job.location}</p>
+        {job.salary && <p className="job-salary">Salary: {job.salary}</p>}
+        <p className="job-description">{job.description}</p>
       </div>
 
+      {/* right column */}
       <div className="job-card-right">
-        <div className="job-image-placeholder"></div>
+        {job.logo ? (
+          <img
+            className="job-logo"
+            src={`${API}/uploads/${job.logo}`}
+            alt={`${job.company} logo`}
+          />
+        ) : (
+          <div className="job-image-placeholder" />
+        )}
 
         <div className="job-buttons">
-          <button className="not-interested-button">NOT INTERESTED</button>
-          <button className="apply-now-button">APPLY NOW</button>
+          {/* Use React‑Router <Link> instead of navigate() handler */}
+          <Link to={`/job-apply/${job._id}`} className="apply-now-button">
+  APPLY NOW
+</Link>
+
         </div>
       </div>
     </div>

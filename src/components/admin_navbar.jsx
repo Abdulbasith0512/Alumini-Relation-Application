@@ -26,7 +26,7 @@ function Navbar() {
             <li><button className="nav-libtn" onClick={() => navigate("/admin-dashboard")}>DASHBOARD</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/admin-feed")}>FEED</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/admin-events")}>EVENTS</button></li>
-            <li><button className="nav-libtn">JOBS</button></li>
+            <li><button className="nav-libtn" onClick={() => navigate("/admin-jobs")}>JOBS</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/alert-page")}>ALERTS</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/gallery-page")}>GALLERY</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/admin-registrations")}>NEW REGISTRATIONS</button></li>

@@ -33,6 +33,7 @@ import SuperAdminDashboard from './pages/super_admin_dashboard';
 import AdminEvents from './pages/admin_events';
 import CreateJob from './pages/create_job';
 import JobApplicationPage from './pages/JobApplicationPage';
+import AdminJobs from './pages/admin_jobs';
 
 
 
@@ -76,7 +77,7 @@ function App() {
   <Route path="/admin-dashboard" element={<AdminDashboard />} />
   <Route path="/admin-registrations" element={<AdminRegistrations />} />
 <Route path="/job-apply/:jobId" element={<JobApplicationPage />} />
-
+<Route path="/admin-jobs" element={<AdminJobs />} />
 
 </Routes>
         </Router>

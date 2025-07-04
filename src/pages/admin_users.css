@@ -13,42 +13,47 @@
   gap: 20px;
   padding: 20px;
 }
+
+/* Modular Container */
 .top-controls {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 1.5rem auto;
-  max-width: 900px;
+  justify-content: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 1rem;
-  padding: 0 1rem;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  padding: 1rem;
+  max-width: 1000px;
 }
 
-.left-controls {
+/* Each control section in a card */
+.control-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  min-width: 250px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
+/* Search and filter inputs */
 .left-controls input[type="text"],
 .left-controls select {
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
   border: 1px solid #ccc;
   border-radius: 6px;
   background-color: #f9f9f9;
+  width: 100%;
 }
 
-/* Right side upload button */
-.right-controls {
-  display: flex;
-  align-items: center;
-}
-
+/* Excel Upload Styles */
 .excel-upload {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
@@ -56,7 +61,7 @@
   font-size: 0.85rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  padding: 0.3rem;
+  padding: 0.4rem;
   background-color: #fff;
 }
 
@@ -78,4 +83,47 @@
 
 .excel-upload button:hover:not(:disabled) {
   background-color: #2980b9;
+}
+
+/* Export Fields */
+.export-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-panel-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.export-panel-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.export-panel label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.export-panel button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #2ecc71;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.export-panel button:hover {
+  background-color: #27ae60;
 }

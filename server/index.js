@@ -789,6 +789,62 @@ app.get("/applications/user/:userId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+const PremiumPlan   = require('./models/premiumplans');
+const Subscription  = require('./models/subscription');
+const { isSuperAdmin, isAuthenticated } = require('./middleware/auth'); // you write these
+
+/* ── SUPER ADMIN: CRUD PLANS ────────────────────────── */
+
+// GET all plans
+app.get('/api/plans', async (_,res)=>{
+  const plans = await PremiumPlan.find().sort({ price:1 });
+  res.json(plans);
+});
+
+// POST create plan
+app.post('/api/plans', isSuperAdmin, async (req,res)=>{
+  const { name, price, durationDays, description } = req.body;
+  const plan = await PremiumPlan.create({ name, price, durationDays, description });
+  res.json(plan);
+});
+
+// PUT update plan
+app.put('/api/plans/:id', isSuperAdmin, async (req,res)=>{
+  const plan = await PremiumPlan.findByIdAndUpdate(req.params.id, req.body, { new:true });
+  res.json(plan);
+});
+
+// DELETE plan
+app.delete('/api/plans/:id', isSuperAdmin, async (req,res)=>{
+  await PremiumPlan.findByIdAndDelete(req.params.id);
+  res.json({ message:'Plan deleted' });
+});
+
+/* ── USER: BUY / VIEW MY SUBSCRIPTION ───────────────── */
+
+app.post('/api/subscribe/:planId', isAuthenticated, async (req,res)=>{
+  const plan = await PremiumPlan.findById(req.params.planId);
+  if (!plan) return res.status(404).json({ error:'Plan not found' });
+
+  // TODO integrate Razorpay/Stripe; for now assume payment succeeded
+  const start = new Date();
+  const end   = new Date(Date.now() + plan.durationDays*24*60*60*1000);
+
+  const sub = await Subscription.create({
+    userId: req.user._id,
+    planId: plan._id,
+    start, end, status:'active'
+  });
+
+  res.json({ message:'Subscription active', sub });
+});
+
+// GET current user subscription
+app.get('/api/my-sub', isAuthenticated, async (req,res)=>{
+  const sub = await Subscription.findOne({ userId:req.user._id, status:'active', end:{ $gte:new Date() } })
+                                .populate('planId');
+  res.json({ active: !!sub, sub });
+});
 
 // --------------------------- START SERVER ---------------------------
 

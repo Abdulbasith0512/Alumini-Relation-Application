@@ -1,15 +1,35 @@
-.events-page {
-  background-color: #ffffff;
-  height: 100vh;                /* Take full viewport height */
-  overflow-y: auto;             /* Enable vertical scrolling */
+/* ⬇ basic page styling already there – keep it */
+
+/* LIST MODE (no card selected) ↓ */
+.events-layout-list {
   display: flex;
   flex-direction: column;
-}
-
-.events-grid {
-  display: flex;
-  flex-direction: column;       /* Stack EventCards vertically */
   gap: 1.5rem;
   padding: 2rem;
-  background-color: transparent;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* EXPANDED MODE ↓ */
+.events-layout-expanded {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  /* keep it full‑width / take remaining height below navbar */
+  height: calc(100vh - 160px);  /* adjust if navbar/profile heights differ */
+}
+
+/* LEFT COLUMN – grows */
+.events-main {
+  flex: 1 1 0;
+  overflow-y: auto;
+}
+
+/* RIGHT COLUMN – fixed width, scrolls vertically */
+.events-sidebar {
+  width: 320px;               /* ← tune as you like */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }

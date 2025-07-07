@@ -36,11 +36,13 @@ import AdminJobs          from "./pages/admin_jobs";
 import CreateJob          from "./pages/create_job";
 import AlertPageAdmin     from "./pages/AlertPage_admin";
 import GalleryPageAdmin   from "./pages/GalleryPage_admin";
+import PurchasePremium    from "./pages/PurchasePremium";
 
 // Super‑admin
 import SuperAdminLogin    from "./pages/super_admin_login";
 import SuperAdminDashboard from "./pages/super_admin_dashboard";
 import SuperAdminSignup   from "./pages/super_admin_signup";
+import PremiumPlansAdmin from "./pages/PremiumPlansAdmin";
 const GOOGLE_CLIENT_ID =
   "121835700906-thqi0h9t9anvgodk7ptp7ah26lt90oks.apps.googleusercontent.com";
 
@@ -66,6 +68,7 @@ function App() {
             <Route path="/super-admin-login"     element={<SuperAdminLogin />} />
             <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 <Route path="/super-admin-signup"       element={<SuperAdminSignup />} />
+<Route path="/premium-plans-super-admin" element={<PremiumPlansAdmin />} />
             {/* Admin */}
             <Route path="/admin-login"        element={<AdminLoginPage />} />
             <Route path="/admin-dashboard"    element={<AdminDashboard />} />
@@ -92,6 +95,7 @@ function App() {
             <Route path="/job-apply/:jobId"  element={<JobApplicationPage />} />
             <Route path="/gallery-page-user"  element={<GalleryPageUser />} />
             <Route path="/alert-page-user"    element={<UserAlertsPage />} />
+            <Route path="/purchase-premium" element={<PurchasePremium />} />
           </Routes>
         </Router>
       </AuthProvider>

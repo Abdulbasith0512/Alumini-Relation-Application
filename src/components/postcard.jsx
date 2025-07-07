@@ -1,53 +1,53 @@
-import React from 'react';
-import './postcard.css';
+    import React from 'react';
+    import './postcard.css';
 
-function PostCard({
-  name,
-  imageSrc,
-  content,
-  likes = 0,
-  comments = 0,
-  onDelete,
-  onNotify,
-}) {
-  return (
-    <div className="post-card">
-      <h2 className="post-author">{name}</h2>
+    function PostCard({
+      name,
+      imageSrc,
+      content,
+      likes = 0,
+      comments = 0,
+      onDelete,
+      onNotify,
+    }) {
+      return (
+        <div className="post-card-enhanced">
+          <div className="author-badge">
+            <span>{name}</span>
+          </div>
 
-      {imageSrc && (
-        <div className="post-image">
-          <img
-            src={imageSrc}
-            alt="Post"
-            style={{ width: '100%', borderRadius: '10px' }}
-          />
-        </div>
-      )}
-
-      <div className="post-actions">
-        <span role="img" aria-label="like">👍 {likes}</span>
-        <span role="img" aria-label="comment">💬 {comments}</span>
-      </div>
-
-      <p className="post-content">{content}</p>
-
-      {/* Admin Controls */}
-      {(onDelete || onNotify) && (
-        <div className="admin-actions">
-          {onNotify && (
-            <button className="notify-btn" onClick={onNotify}>
-              Send Notice
-            </button>
+          {imageSrc && (
+            <div className="image-container">
+              <img src={imageSrc} alt="Post visual" />
+            </div>
           )}
-          {onDelete && (
-            <button className="delete-btn" onClick={onDelete}>
-              Delete Post
+
+          <div className="post-content">
+            <p>{content}</p>
+          </div>
+
+          <div className="post-actions-frosted">
+            <button className="reaction-btn" title="Like">
+              ❤️ <span>{likes}</span>
             </button>
+            <button className="reaction-btn" title="Comment">
+              💬 <span>{comments}</span>
+            </button>
+          </div>
+
+          {(onDelete || onNotify) && (
+            <div className="admin-tools">
+              {onNotify && (
+                <button className="btn notify">📢 Notify</button>
+              )}
+              {onDelete && (
+                <button className="btn delete">🗑️ Delete</button>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </div>
-  );
-}
+      );
+    }
 
-export default PostCard;
+    export default PostCard;
+  // PostCard component with enhanced styles and functionality

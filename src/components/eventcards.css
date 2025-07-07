@@ -1,109 +1,78 @@
+/* === CARD BASE === */
 .event-card {
-  background-color: white;
+  background: #fff;
   border-radius: 15px;
-  padding: 20px;
-  width: 90%;
-  max-width: 800px;
-  margin: 20px auto;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  font-family: 'Arial', sans-serif;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.35s ease;      /* animate width/height/position/opacity */
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  width: 100%;                     /* default list width */
 }
 
+/* image */
 .event-image-placeholder {
   width: 100%;
-  max-height: 300px;
+  max-height: 250px;
   overflow: hidden;
-  border-radius: 10px;
 }
 
 .event-image-placeholder img {
   width: 100%;
   height: auto;
-  object-fit: contain;  /* Makes full image visible without cropping */
   display: block;
+  object-fit: contain;
 }
 
+/* content */
 .event-content {
+  padding: 20px;
   text-align: left;
 }
 
-.event-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.event-description {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 20px;
-}
-
+/* footer */
 .event-footer {
+  margin-top: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.event-status {
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  border: 1px solid #00ff5a;
-}
+/* button + status (unchanged) ... */
 
-.event-status.active {
-  color: #00ff5a;
+/* === EXPANDED STATE === */
+.ec-expanded {
+  transform: scale(1.02);
+  max-width: 800px;          /* feel free to tweak */
 }
-
-.event-button {
-  padding: 10px 20px;
-  background-color: black;
-  color: white;
-  border: none;
-  font-size: 14px;
-  font-weight: bold;
-  border-radius: 10px;
+.ec-compact {
   cursor: pointer;
+  transition: transform 0.25s ease;
+}.ec-compact:hover {
+  transform: translateY(-4px);
 }
 
-.event-button:hover {
-  background-color: #222;
+/* Hide the ENROLL button inside the sidebar cards */
+.ec-compact .event-button {
+  display: none;
 }
-/* Make the full page scrollable */
-.events-page {
-  background-color: #ffffff;
-  min-height: 100vh;
-  height: 100vh; /* Ensures the height is locked for scroll */
-  overflow-y: auto; /* Enables vertical scroll */
-  display: flex;
-  flex-direction: column;
+/* simple “zoom” feel – optional */
+.ec-expanded:hover {
+  transform: scale(1.02);
 }
 
-/* Centered, scrollable grid of cards */
-.events-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 2rem;
-  max-height: 100%;
-  overflow-y: auto; /* Allows inner scrolling if you prefer */
-}
-/* Sticky navbar */
-nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-/* Sticky profile (optional) */
-.profile-layout {
-  position: sticky;
-  top: 60px; /* adjust depending on navbar height */
-  z-index: 90;
-  background-color: #ffffff;
+/* === BACK BUTTON === */
+.ec-back-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
 }

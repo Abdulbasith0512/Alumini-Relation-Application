@@ -29,7 +29,7 @@ function Navbar() {
             <li><button className="nav-libtn"onClick={() => navigate("/super-admin-signup")} >SIGNUP</button></li>
             <li><button className="nav-libtn" >GALLERY</button></li>
            <li><button className="nav-libtn" >USERS</button></li> 
-            <li><button className="nav-libtn">PREMIUM PLANS</button></li>
+            <li><button className="nav-libtn"onClick={() => navigate("/premium-plans-super-admin")}>PREMIUM PLANS</button></li>
           </ul>
         </nav>
         <div className="user-menu">

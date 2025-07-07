@@ -1,6 +1,0 @@
-.event-feed-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px; /* spacing between each card */
-  padding: 20px;
-}

@@ -2,7 +2,7 @@ import Navbar from "../components/navbar";
 import './B_home_page.css';
 import homePerson from '../assets/home_person.png';
 
-
+import React from 'react';
 
 function HomePage() {
   return (

@@ -10,7 +10,6 @@ const app = express();
 const PORT = 3001;
 const Application = require("./models/Application");
 
-// MongoDB Models
 const Register = require('./models/register');
 const Admin = require('./models/admin');
 const SuperAdmin = require('./models/super_admin'); // Ensure this model exists
@@ -20,38 +19,28 @@ const Event = require('./models/event');
 const Gallery = require('./models/gallery');
 const Alert = require('./models/alert');
 const SignupConfig = require('./models/SignupConfig');
-// MongoDB connection
 mongoose.connect("mongodb://127.0.0.1:27017/alumni_erp")
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-// Middleware
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const Job = require("./models/job");
 
-// Multer Config
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_, __, cb) => cb(null, 'uploads/'),
     filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
   })
 });
-
-
-// Auto-create Admin
-// ------------------------- AUTO CREATE ADMINS -------------------------
 (async () => {
   try {
-    // Create Admin if not exists
     const adminExists = await Admin.findOne({ ID: "Admin123" });
     if (!adminExists) {
       await Admin.create({ ID: "Admin123", password: "adminpassword123" });
       console.log("✅ Admin user created");
     }
-
-    // Create SuperAdmin if not exists
     const superAdminExists = await SuperAdmin.findOne({ ID: "SuperAdmin01" });
     if (!superAdminExists) {
       await SuperAdmin.create({ ID: "SuperAdmin01", password: "superSecret@123" });
@@ -61,9 +50,6 @@ const upload = multer({
     console.error("❌ Error creating default users:", err);
   }
 })();
-
-// --------------------------- AUTH ---------------------------
-
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -117,8 +103,6 @@ app.post('/superadminlogin', async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
-
-// --------------------------- REGISTRATION ---------------------------
 app.post('/register', upload.any(), async (req, res) => {
   try {
     const data = { ...req.body };
@@ -134,8 +118,6 @@ app.post('/register', upload.any(), async (req, res) => {
     res.status(400).json({ error: 'Registration failed' });
   }
 });
-
-// Get pending registrations
 app.get('/pending-registrations', async (_, res) => {
   try {
     const pendingUsers = await Register.find();
@@ -144,8 +126,6 @@ app.get('/pending-registrations', async (_, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// Approve user
 app.post('/approve/:id', async (req, res) => {
   try {
     const regUser = await Register.findById(req.params.id).lean();
@@ -176,8 +156,6 @@ app.post('/approve/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-// Reject user
 app.delete('/reject/:id', async (req, res) => {
   try {
     await Register.findByIdAndDelete(req.params.id);
@@ -186,8 +164,6 @@ app.delete('/reject/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-// Check if user is already registered
 app.get('/api/check-registers', async (req, res) => {
   try {
     const exists = await Register.findOne({ email: req.query.email });
@@ -199,17 +175,12 @@ app.get('/api/check-registers', async (req, res) => {
 
 /* ───────── utils ───────── */
 async function getSignupConfig() {
-  // find one – if missing create with defaults in ONE atomic call
   return await SignupConfig.findOneAndUpdate(
     {},                          // filter
     {},                          // no changes
     { new: true, upsert: true }  // create if absent, return the doc
   ).lean();                      // plain JS object (not Mongoose doc)
 }
-
-/* ───────── routes ───────── */
-
-// GET  /api/signup-config
 app.get('/api/signup-config', async (req, res) => {
   try {
     const cfg = await getSignupConfig();
@@ -233,8 +204,6 @@ app.put('/api/signup-config', async (req, res) => {
     res.status(500).json({ error: 'Failed to update signup config' });
   }
 });
-
-// POST /api/signup-config/field   (add one custom field)
 app.post('/api/signup-config/field', async (req, res) => {
   const { key, label, type = 'text', required = false } = req.body;
   if (!key || !label)
@@ -271,9 +240,6 @@ app.post('/api/signup-config/field', async (req, res) => {
     res.status(500).json({ error: 'Could not add field' });
   }
 });
-
-// --------------------------- USERS ---------------------------
-
 app.get('/users', async (_, res) => {
   try {
     const users = await User.find();
@@ -306,8 +272,6 @@ app.put('/users/:id', upload.single('profilePhoto'), async (req, res) => {
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
-
-// --------------------------- POSTS ---------------------------
 
 app.post('/create-post', upload.single('photo'), async (req, res) => {
   const { userId, bio } = req.body;
@@ -381,10 +345,6 @@ app.delete("/posts/:postId", async (req, res) => {
   }
 });
 
-// --------------------------- EVENTS ---------------------------
-
-
-/* auto‑deactivate past events every 24 h */
 setInterval(async () => {
   await Event.updateMany(
     { date: { $lt: new Date() }, status: "active" },
@@ -392,7 +352,6 @@ setInterval(async () => {
   );
 }, 1000 * 60 * 60 * 24); // 24 h
 
-/* CREATE event */
 app.post("/events", upload.single("image"), async (req, res) => {
   const { title, description, date, location } = req.body;
   const image = req.file?.filename;
@@ -407,9 +366,6 @@ app.post("/events", upload.single("image"), async (req, res) => {
   }
 });
 
-/* LIST events
-   - default: only “active”
-   - add ?includePast=true to get everything (active + inactive) */
 app.get("/events", async (req, res) => {
   try {
     const includePast = req.query.includePast === "true";
@@ -421,7 +377,6 @@ app.get("/events", async (req, res) => {
   }
 });
 
-/* GET single event */
 app.get("/events/:eventId", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
@@ -432,7 +387,6 @@ app.get("/events/:eventId", async (req, res) => {
   }
 });
 
-/* ENROLL user in event */
 app.post("/events/:eventId/enroll", async (req, res) => {
   const { userId } = req.body;
   try {
@@ -450,7 +404,6 @@ app.post("/events/:eventId/enroll", async (req, res) => {
   }
 });
 
-/* ROSTER for an event */
 app.get("/events/:eventId/enrolled-users", async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId)
@@ -462,7 +415,6 @@ app.get("/events/:eventId/enrolled-users", async (req, res) => {
   }
 });
 
-/* EVENTS current user is NOT enrolled in */
 app.get("/events/not-enrolled/:userId", async (req, res) => {
   try {
     const events = await Event.find({ enrolledUsers: { $ne: req.params.userId } });
@@ -472,7 +424,6 @@ app.get("/events/not-enrolled/:userId", async (req, res) => {
   }
 });
 
-/* EVENTS current user IS enrolled in */
 app.get("/events/enrolled/:userId", async (req, res) => {
   try {
     const events = await Event.find({ enrolledUsers: req.params.userId });
@@ -482,7 +433,6 @@ app.get("/events/enrolled/:userId", async (req, res) => {
   }
 });
 
-/* DELETE event  (also removes image file) */
 app.delete("/events/:eventId", async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.eventId);
@@ -496,8 +446,6 @@ app.delete("/events/:eventId", async (req, res) => {
     res.status(500).json({ error: "Failed to delete event" });
   }
 });
-
-// --------------------------- GALLERY ---------------------------
 
 app.post('/api/gallery', upload.array('files', 10), async (req, res) => {
   try {
@@ -533,8 +481,6 @@ app.delete('/api/gallery/:id', async (req, res) => {
     res.status(500).json({ error: "Failed to delete gallery post" });
   }
 });
-
-// --------------------------- ALERTS ---------------------------
 
 app.post("/api/alerts", async (req, res) => {
   try {
@@ -586,8 +532,6 @@ app.post("/notify", async (req, res) => {
   }
 });
 
-// --------------------------- BULK IMPORT ---------------------------
-
 app.post("/import-users", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -611,7 +555,6 @@ app.post("/import-users", upload.single("file"), async (req, res) => {
     res.status(500).json({ error: "Import failed" });
   }
 });
-
 function mapRow(r) {
   return {
     name: r.name || r.Name,
@@ -633,22 +576,17 @@ function mapRow(r) {
     profilePhoto: r.profilePhoto,
   };
 }
-
-
-// --------------------------- JOBS ---------------------------
 const logoStorage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, "uploads/logos"),
   filename: (_, file, cb) =>
     cb(null, `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`),
 });
-
 const uploadLogo = multer({ storage: logoStorage });
 const resumeStorage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, "uploads/resumes"),
   filename: (_, file, cb) =>
     cb(null, `${Date.now()}-${file.originalname.replace(/\s+/g, "_")}`)
 });
-
 const uploadResume = multer({
   storage: resumeStorage,
   fileFilter: (_, file, cb) => {
@@ -656,8 +594,6 @@ const uploadResume = multer({
     cb(null, file.mimetype === "application/pdf");
   }
 });
-
-// CREATE a job
 app.post("/create-job", uploadLogo.single("logo"), async (req, res) => {
   const { title, description, company, location, salary, userId } = req.body;
   if (!title || !description || !company || !location || !userId)
@@ -679,8 +615,6 @@ app.post("/create-job", uploadLogo.single("logo"), async (req, res) => {
     res.status(500).json({ error: "Failed to post job" });
   }
 });
-
-// LIST all jobs
 app.get("/jobs", async (_, res) => {
   try {
     const jobs = await Job.find().sort({ createdAt: -1 }).populate("userId", "name");
@@ -689,8 +623,6 @@ app.get("/jobs", async (_, res) => {
     res.status(500).json({ error: "Failed to fetch jobs" });
   }
 });
-
-// GET one job
 app.get("/jobs/:id", async (req, res) => {
   try {
     const job = await Job.findById(req.params.id).populate("userId", "name");
@@ -700,31 +632,23 @@ app.get("/jobs/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch job" });
   }
 });
-
-// DELETE a job
 app.delete("/jobs/:jobId", async (req, res) => {
   try {
     const job = await Job.findByIdAndDelete(req.params.jobId);
     if (!job) return res.status(404).json({ error: "Job not found" });
-
     if (job.logo) fs.unlink(`uploads/${job.logo}`, () => {});
     res.json({ message: "Job deleted" });
   } catch {
     res.status(500).json({ error: "Failed to delete job" });
   }
 });
-
-// APPLY to a job
-/************************  APPLY to a job  ************************/
 app.post("/jobs/:jobId/apply", uploadResume.single("resume"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Resume (PDF) is required." });
     if (!req.body.name || !req.body.email || !req.body.applicant)
       return res.status(400).json({ error: "Name, email, and applicant ID are required." });
-
     const job = await Job.findById(req.params.jobId);
     if (!job) return res.status(404).json({ error: "Job not found" });
-
     const application = await Application.create({
       applicant: req.body.applicant,      // 👈 save ObjectId of user
       job: job._id,
@@ -732,38 +656,29 @@ app.post("/jobs/:jobId/apply", uploadResume.single("resume"), async (req, res) =
       email: req.body.email,
       resume: req.file.filename
     });
-
     res.status(201).json({ message: "Application submitted", application });
   } catch (err) {
     console.error("Error applying for job:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-/**************  LIST applications for ONE USER  *****************/
 app.get("/applications/user/:userId", async (req, res) => {
   try {
     const apps = await Application.find({ applicant: req.params.userId }) // 👈 query by ObjectId
       .populate("job", "title company location logo")
       .sort({ appliedAt: -1 });
-
     res.json(apps);
   } catch (err) {
     console.error("Error fetching user applications:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
-// LIST applications
 app.get("/jobs/:jobId/applications", async (req, res) => {
   const { jobId } = req.params;
-
   try {
     if (!mongoose.Types.ObjectId.isValid(jobId)) {
       return res.status(400).json({ error: "Invalid Job ID" });
     }
-
     const apps = await Application.find({ job: jobId }).sort({ appliedAt: -1 });
     res.json(apps);
   } catch (err) {
@@ -771,17 +686,11 @@ app.get("/jobs/:jobId/applications", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-// routes/applications.js  (or in your main server file)
-
-// GET /applications/user/:userId   →  list jobs the user applied for
 app.get("/applications/user/:userId", async (req, res) => {
   try {
     const apps = await Application.find({ email: req.params.userId })  // or `applicantId` if you store an ObjectId
       .populate("job", "title company location logo")
       .sort({ appliedAt: -1 });
-
-    // If you store applicant as ObjectId ref:
-    // const apps = await Application.find({ applicant: req.params.userId })
 
     res.json(apps);
   } catch (err) {
@@ -792,63 +701,96 @@ app.get("/applications/user/:userId", async (req, res) => {
 const PremiumPlan   = require('./models/premiumplans');
 const Subscription  = require('./models/subscription');
 const { isSuperAdmin, isAuthenticated } = require('./middleware/auth'); // you write these
+app.get('/api/admin/plans', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    const plans = await PremiumPlan.find().sort({ price: 1 });
+    res.json(plans);
+  } catch (err) {
+    console.error('Failed to fetch plans:', err);
+    res.status(500).json({ error: 'Server error fetching plans' });
+  }
+});
+app.post('/api/admin/plans', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    const { name, price, durationDays, description } = req.body;
+    const plan = await PremiumPlan.create({ name, price, durationDays, description });
+    res.json(plan);
+  } catch (err) {
+    console.error('Plan creation failed:', err);
+    res.status(500).json({ error: 'Failed to create plan' });
+  }
+});
+app.put('/api/admin/plans/:id', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    const plan = await PremiumPlan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(plan);
+  } catch (err) {
+    console.error('Plan update failed:', err);
+    res.status(500).json({ error: 'Failed to update plan' });
+  }
+});
+app.delete('/api/admin/plans/:id', isAuthenticated, isSuperAdmin, async (req, res) => {
+  try {
+    await PremiumPlan.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Plan deleted' });
+  } catch (err) {
+    console.error('Plan delete failed:', err);
+    res.status(500).json({ error: 'Failed to delete plan' });
+  }
+});
+app.get('/api/plans', async (req, res) => {
+  try {
+     const plans = await PremiumPlan.find();
 
-/* ── SUPER ADMIN: CRUD PLANS ────────────────────────── */
-
-// GET all plans
-app.get('/api/plans', async (_,res)=>{
-  const plans = await PremiumPlan.find().sort({ price:1 });
-  res.json(plans);
+    res.json(plans);
+  } catch (error) {
+    console.error('Error fetching plans:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-// POST create plan
-app.post('/api/plans', isSuperAdmin, async (req,res)=>{
-  const { name, price, durationDays, description } = req.body;
-  const plan = await PremiumPlan.create({ name, price, durationDays, description });
-  res.json(plan);
+app.post('/api/subscribe/:planId', isAuthenticated, async (req, res) => {
+  try {
+    const plan = await PremiumPlan.findById(req.params.planId);
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+
+    const existing = await Subscription.findOne({
+      userId: req.user._id,
+      status: 'active',
+      end: { $gte: new Date() },
+    });
+    if (existing) return res.status(400).json({ error: 'You already have an active subscription' });
+
+    const start = new Date();
+    const end = new Date(start.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
+    const sub = await Subscription.create({
+      userId: req.user._id,
+      planId: plan._id,
+      start,
+      end,
+      status: 'active',
+    });
+    res.json({ message: 'Subscription active', sub });
+  } catch (err) {
+    console.error('Subscription error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-// PUT update plan
-app.put('/api/plans/:id', isSuperAdmin, async (req,res)=>{
-  const plan = await PremiumPlan.findByIdAndUpdate(req.params.id, req.body, { new:true });
-  res.json(plan);
+app.get('/api/my-sub', isAuthenticated, async (req, res) => {
+  try {
+    const sub = await Subscription.findOne({
+      userId: req.user._id,
+      status: 'active',
+      end: { $gte: new Date() },
+    }).populate('planId');
+
+    res.json({ active: !!sub, sub });
+  } catch (err) {
+    console.error('Fetch subscription failed:', err);
+    res.status(500).json({ error: 'Failed to get subscription' });
+  }
 });
-
-// DELETE plan
-app.delete('/api/plans/:id', isSuperAdmin, async (req,res)=>{
-  await PremiumPlan.findByIdAndDelete(req.params.id);
-  res.json({ message:'Plan deleted' });
-});
-
-/* ── USER: BUY / VIEW MY SUBSCRIPTION ───────────────── */
-
-app.post('/api/subscribe/:planId', isAuthenticated, async (req,res)=>{
-  const plan = await PremiumPlan.findById(req.params.planId);
-  if (!plan) return res.status(404).json({ error:'Plan not found' });
-
-  // TODO integrate Razorpay/Stripe; for now assume payment succeeded
-  const start = new Date();
-  const end   = new Date(Date.now() + plan.durationDays*24*60*60*1000);
-
-  const sub = await Subscription.create({
-    userId: req.user._id,
-    planId: plan._id,
-    start, end, status:'active'
-  });
-
-  res.json({ message:'Subscription active', sub });
-});
-
-// GET current user subscription
-app.get('/api/my-sub', isAuthenticated, async (req,res)=>{
-  const sub = await Subscription.findOne({ userId:req.user._id, status:'active', end:{ $gte:new Date() } })
-                                .populate('planId');
-  res.json({ active: !!sub, sub });
-});
-
-// --------------------------- START SERVER ---------------------------
-
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
-// GET /events/:id/enrollments  ➜  list everyone enrolled in an event

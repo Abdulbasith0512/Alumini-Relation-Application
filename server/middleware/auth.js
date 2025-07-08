@@ -1,13 +1,13 @@
 // server/middleware/auth.js
+// 🚨 DEVELOPMENT STUB — Replace with JWT/session auth for production.
 
-// Dummy middleware for development/testing. DO NOT USE IN PRODUCTION.
 function isAuthenticated(req, res, next) {
   console.log("Authenticating user...");
-  req.user = { _id: 'dummyuserid', role: 'user' }; // Inject dummy user
+  const role = req.headers['x-dev-role'] || 'user';
+  req.user = { _id: 'dummyuserid', role }; // dev role override
   next();
 }
 
-// Middleware to allow only users with 'superadmin' role
 function isSuperAdmin(req, res, next) {
   if (req.user?.role !== 'superadmin') {
     return res.status(403).json({ error: 'Only super admin allowed' });
@@ -15,7 +15,6 @@ function isSuperAdmin(req, res, next) {
   next();
 }
 
-// Reusable middleware to allow specific roles
 function allowRole(role) {
   return (req, res, next) => {
     if (req.user?.role !== role) {

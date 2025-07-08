@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Glogout from '../components/glogout';
 import { GalleryGrid } from './GalleryPage_admin';   // reusable grid with Swiper
 import './Gallery.css';                              // modern gallery styles
-
+import React from 'react';
 export default function HomePageuser() {
   const [user, setUser] = useState(null);
   const [gallery, setGallery] = useState([]);

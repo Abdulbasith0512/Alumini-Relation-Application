@@ -11,7 +11,7 @@ import {
   BarElement,
 } from "chart.js";
 import "./admin_dashboard.css";
-
+import React from "react";
 /* Chart.js global registration */
 Chart.register(
   ArcElement,

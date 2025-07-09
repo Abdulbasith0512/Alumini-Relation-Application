@@ -5,11 +5,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const XLSX = require('xlsx');
-
 const app = express();
 const PORT = 3001;
 const Application = require("./models/Application");
-
 const Register = require('./models/register');
 const Admin = require('./models/admin');
 const SuperAdmin = require('./models/super_admin'); // Ensure this model exists
@@ -19,6 +17,9 @@ const Event = require('./models/event');
 const Gallery = require('./models/gallery');
 const Alert = require('./models/alert');
 const SignupConfig = require('./models/SignupConfig');
+const PremiumPlan   = require('./models/premiumplans');
+const Subscription  = require('./models/subscription');
+const { isSuperAdmin, isAuthenticated } = require('./middleware/auth'); 
 mongoose.connect("mongodb://127.0.0.1:27017/alumni_erp")
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
@@ -27,29 +28,18 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const Job = require("./models/job");
-
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_, __, cb) => cb(null, 'uploads/'),
     filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
-  })
-});
-(async () => {
-  try {
-    const adminExists = await Admin.findOne({ ID: "Admin123" });
-    if (!adminExists) {
-      await Admin.create({ ID: "Admin123", password: "adminpassword123" });
-      console.log("✅ Admin user created");
-    }
-    const superAdminExists = await SuperAdmin.findOne({ ID: "SuperAdmin01" });
-    if (!superAdminExists) {
-      await SuperAdmin.create({ ID: "SuperAdmin01", password: "superSecret@123" });
-      console.log("✅ SuperAdmin user created");
-    }
-  } catch (err) {
-    console.error("❌ Error creating default users:", err);
+  }),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
-})();
+});
+
+
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -105,19 +95,27 @@ app.post('/superadminlogin', async (req, res) => {
 });
 app.post('/register', upload.any(), async (req, res) => {
   try {
+    const existing = await Register.findOne({ email: req.body.email });
+    if (existing) return res.status(409).json({ error: 'Email already registered' });
+
     const data = { ...req.body };
+
+    // Map uploaded files to corresponding field names
     if (req.files?.length) {
-      req.files.forEach(f => {
-        data[f.fieldname] = f.filename;
+      req.files.forEach(file => {
+        data[file.fieldname] = file.filename;
       });
     }
+
     const user = await Register.create(data);
     res.json({ message: "Registration pending admin approval", user });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: 'Registration failed' });
+    res.status(400).json({ error: err.message || 'Registration failed' });
   }
 });
+
+// GET Pending Registrations
 app.get('/pending-registrations', async (_, res) => {
   try {
     const pendingUsers = await Register.find();
@@ -126,6 +124,8 @@ app.get('/pending-registrations', async (_, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// APPROVE REGISTRATION
 app.post('/approve/:id', async (req, res) => {
   try {
     const regUser = await Register.findById(req.params.id).lean();
@@ -142,9 +142,9 @@ app.post('/approve/:id', async (req, res) => {
       password: regUser.password,
       batchYear: regUser.batchYear,
       department: regUser.degree,
-      profilePhoto: regUser.Profile_photo,
+      profilePhoto: regUser.profile_image || "", // Adjust field name here
       address: "", jobTitle: "", company: "", linkedin: "", github: "", bio: "",
-      ...regUser, // custom fields
+      ...regUser // include other custom fields
     });
 
     await newUser.save();
@@ -156,6 +156,8 @@ app.post('/approve/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// REJECT USER
 app.delete('/reject/:id', async (req, res) => {
   try {
     await Register.findByIdAndDelete(req.params.id);
@@ -164,6 +166,8 @@ app.delete('/reject/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// CHECK IF EMAIL EXISTS
 app.get('/api/check-registers', async (req, res) => {
   try {
     const exists = await Register.findOne({ email: req.query.email });
@@ -173,14 +177,15 @@ app.get('/api/check-registers', async (req, res) => {
   }
 });
 
-/* ───────── utils ───────── */
+// GET SIGNUP CONFIG
 async function getSignupConfig() {
   return await SignupConfig.findOneAndUpdate(
-    {},                          // filter
-    {},                          // no changes
-    { new: true, upsert: true }  // create if absent, return the doc
-  ).lean();                      // plain JS object (not Mongoose doc)
+    {},
+    {},
+    { new: true, upsert: true }
+  ).lean();
 }
+
 app.get('/api/signup-config', async (req, res) => {
   try {
     const cfg = await getSignupConfig();
@@ -191,12 +196,12 @@ app.get('/api/signup-config', async (req, res) => {
   }
 });
 
-// PUT  /api/signup-config   (replace entire config)
+// UPDATE SIGNUP CONFIG
 app.put('/api/signup-config', async (req, res) => {
   try {
     const cfg = await SignupConfig.findOneAndUpdate({}, req.body, {
       new: true,
-      upsert: true,      // create doc if first time
+      upsert: true
     }).lean();
     res.json({ message: 'Config updated', cfg });
   } catch (err) {
@@ -204,20 +209,17 @@ app.put('/api/signup-config', async (req, res) => {
     res.status(500).json({ error: 'Failed to update signup config' });
   }
 });
+
+// ADD NEW SIGNUP FIELD
 app.post('/api/signup-config/field', async (req, res) => {
   const { key, label, type = 'text', required = false } = req.body;
   if (!key || !label)
     return res.status(400).json({ error: 'key and label required' });
 
   try {
-    // create config doc if it doesn’t exist
     const cfg = await getSignupConfig();
 
-    if (
-      cfg.customFields?.some(
-        (f) => f.key.toLowerCase() === key.toLowerCase()
-      )
-    ) {
+    if (cfg.customFields?.some(f => f.key.toLowerCase() === key.toLowerCase())) {
       return res.status(400).json({ error: 'Field already exists' });
     }
 
@@ -225,21 +227,33 @@ app.post('/api/signup-config/field', async (req, res) => {
       {},
       {
         $push: {
-          customFields: { key, label, type, required, visible: true },
-        },
+          customFields: { key, label, type, required, visible: true }
+        }
       },
       { new: true }
     ).lean();
 
     res.json({
       message: 'Field added',
-      customFields: updated.customFields,
+      customFields: updated.customFields
     });
   } catch (err) {
     console.error('POST /api/signup-config/field', err);
     res.status(500).json({ error: 'Could not add field' });
   }
 });
+
+// ✅ Multer Error Handler Middleware (keep at end)
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large. Max size is 5MB.' });
+  }
+  if (err.message === 'Invalid file type. Only JPG, PNG, and PDF are allowed.') {
+    return res.status(422).json({ error: err.message });
+  }
+  next(err);
+});
+
 app.get('/users', async (_, res) => {
   try {
     const users = await User.find();
@@ -288,6 +302,52 @@ app.post('/create-post', upload.single('photo'), async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+// POST /posts/:postId/like
+app.post("/posts/:postId/like", async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    // Toggle like
+    const alreadyLiked = post.likes.includes(userId);
+    if (alreadyLiked) {
+      post.likes.pull(userId); // Unlike
+    } else {
+      post.likes.push(userId); // Like
+    }
+
+    await post.save();
+    res.status(200).json({ likes: post.likes.length });
+  } catch (err) {
+    console.error("Error liking post:", err);
+    res.status(500).json({ error: "Failed to like post" });
+  }
+});
+app.post("/posts/:postId/comment", async (req, res) => {
+  const { postId } = req.params;
+  const { userId, comment } = req.body;
+
+  try {
+    if (!userId || !comment) {
+      return res.status(400).json({ error: "Missing userId or comment text" });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    post.comments.push({ user: userId, comment });
+    await post.save();
+
+    res.status(200).json({ message: "Comment added", comments: post.comments.length });
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
 
 app.get('/posts', async (_, res) => {
   try {
@@ -323,6 +383,33 @@ app.get('/posts/user/:userId', async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+app.get('/admin/users/premium-status', async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email premium');
+
+    const now = new Date();
+
+    const formattedUsers = users.map((user) => {
+      const isActive = user.premium?.startDate && user.premium?.endDate
+        ? user.premium.startDate <= now && user.premium.endDate >= now
+        : false;
+
+      return {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        premiumStatus: isActive ? 'Active' : 'Inactive',
+        startDate: user.premium?.startDate,
+        endDate: user.premium?.endDate
+      };
+    });
+
+    res.json(formattedUsers);
+  } catch (err) {
+    console.error('Error fetching premium user data:', err);
+    res.status(500).json({ error: 'Failed to fetch premium status data' });
+  }
+});
 
 app.delete("/posts/:postId", async (req, res) => {
   const { postId } = req.params;
@@ -352,19 +439,27 @@ setInterval(async () => {
   );
 }, 1000 * 60 * 60 * 24); // 24 h
 
-app.post("/events", upload.single("image"), async (req, res) => {
-  const { title, description, date, location } = req.body;
-  const image = req.file?.filename;
-  if (!title || !description || !date || !location || !image)
-    return res.status(400).json({ error: "All fields are required" });
-
+app.post('/api/events', isAuthenticated, async (req, res) => {
   try {
-    const event = await Event.create({ title, description, date, location, image });
-    res.json({ message: "Event created", event });
+    console.log("POST /api/events body:", req.body);
+    
+    const user = req.user; // 🔍 You were referencing `user`, make sure it's defined.
+    if (!user?.premium?.startDate || !user.premium?.endDate || user.premium.endDate < new Date()) {
+      return res.status(403).json({ error: 'You need an active subscription to post jobs.' });
+    }
+
+    const event = new Event(req.body); 
+    await event.save();
+
+    res.status(201).send(event);
   } catch (err) {
-    res.status(500).json({ error: "Failed to create event" });
+    console.error("❌ Error creating event:", err);
+    res.status(500).send({ error: "Event creation failed", details: err.message });
   }
 });
+
+
+
 
 app.get("/events", async (req, res) => {
   try {
@@ -481,7 +576,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
     res.status(500).json({ error: "Failed to delete gallery post" });
   }
 });
-
+// Create alert
 app.post("/api/alerts", async (req, res) => {
   try {
     const alert = new Alert(req.body);
@@ -492,17 +587,17 @@ app.post("/api/alerts", async (req, res) => {
   }
 });
 
+// Get all alerts (no user filter)
 app.get("/api/alerts", async (req, res) => {
   try {
-    const { userId } = req.query;
-    const filter = userId ? { $or: [{ user: null }, { user: userId }] } : { user: null };
-    const alerts = await Alert.find(filter).sort({ createdAt: -1 });
+    const alerts = await Alert.find().sort({ createdAt: -1 });
     res.json(alerts);
   } catch {
     res.status(500).json({ error: 'Failed to fetch alerts' });
   }
 });
 
+// Delete alert by ID
 app.delete("/api/alerts/:id", async (req, res) => {
   try {
     await Alert.findByIdAndDelete(req.params.id);
@@ -512,16 +607,18 @@ app.delete("/api/alerts/:id", async (req, res) => {
   }
 });
 
+// Notify route – save alert for all users (user: null)
 app.post("/notify", async (req, res) => {
-  const { userId, message, postId = null } = req.body;
+  const { message, title = "Notice", postId = null } = req.body;
 
-  if (!userId || !message)
-    return res.status(400).json({ error: "userId and message are required" });
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
 
   try {
     const alert = await Alert.create({
-      user: userId,
       message,
+      title,
       relatedPost: postId,
       createdAt: new Date()
     });
@@ -594,7 +691,13 @@ const uploadResume = multer({
     cb(null, file.mimetype === "application/pdf");
   }
 });
-app.post("/create-job", uploadLogo.single("logo"), async (req, res) => {
+app.post("/create-job", isAuthenticated, uploadLogo.single("logo"), async (req, res) => {
+  const user = req.user; // ✅ define user from req.user
+
+  if (!user?.premium?.startDate || !user.premium?.endDate || user.premium.endDate < new Date()) {
+    return res.status(403).json({ error: 'You need an active subscription to post jobs.' });
+  }
+
   const { title, description, company, location, salary, userId } = req.body;
   if (!title || !description || !company || !location || !userId)
     return res.status(400).json({ error: "Missing required fields" });
@@ -698,9 +801,7 @@ app.get("/applications/user/:userId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-const PremiumPlan   = require('./models/premiumplans');
-const Subscription  = require('./models/subscription');
-const { isSuperAdmin, isAuthenticated } = require('./middleware/auth'); // you write these
+// you write these
 app.get('/api/admin/plans', isAuthenticated, isSuperAdmin, async (req, res) => {
   try {
     const plans = await PremiumPlan.find().sort({ price: 1 });
@@ -751,6 +852,56 @@ app.get('/api/plans', async (req, res) => {
 
 app.post('/api/subscribe/:planId', isAuthenticated, async (req, res) => {
   try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const plan = await PremiumPlan.findById(req.params.planId);
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+
+    const now = new Date();
+
+    // If user already has active subscription
+    if (user.premium?.startDate && user.premium?.endDate) {
+      const isActive = user.premium.startDate <= now && user.premium.endDate >= now;
+      if (isActive) {
+        return res.status(400).json({ error: 'You already have an active subscription' });
+      }
+    }
+
+    const end = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000); // days -> ms
+
+    user.premium = {
+      planId: plan._id,
+      startDate: now,
+      endDate: end
+    };
+
+    await user.save();
+
+    res.json({ message: `Subscribed to ${plan.name} plan successfully`, plan });
+  } catch (err) {
+    console.error('Subscription error:', err);
+    res.status(500).json({ error: 'Subscription failed' });
+  }
+});
+
+
+app.get('/api/my-sub', isAuthenticated, async (req, res) => {
+  try {
+    const sub = await Subscription.findOne({
+      userId: req.user._id,
+      status: 'active',
+      end: { $gte: new Date() },
+    }).populate('planId');
+
+    res.json({ active: !!sub, sub });
+  } catch (err) {
+    console.error('Fetch subscription failed:', err);
+    res.status(500).json({ error: 'Failed to get subscription' });
+  }
+});
+app.post('/api/subscribe/:planId', isAuthenticated, async (req, res) => {
+  try {
     const plan = await PremiumPlan.findById(req.params.planId);
     if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
@@ -774,21 +925,6 @@ app.post('/api/subscribe/:planId', isAuthenticated, async (req, res) => {
   } catch (err) {
     console.error('Subscription error:', err);
     res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-app.get('/api/my-sub', isAuthenticated, async (req, res) => {
-  try {
-    const sub = await Subscription.findOne({
-      userId: req.user._id,
-      status: 'active',
-      end: { $gte: new Date() },
-    }).populate('planId');
-
-    res.json({ active: !!sub, sub });
-  } catch (err) {
-    console.error('Fetch subscription failed:', err);
-    res.status(500).json({ error: 'Failed to get subscription' });
   }
 });
 app.listen(PORT, () => {

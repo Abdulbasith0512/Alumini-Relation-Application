@@ -31,7 +31,7 @@ function Navbar() {
             <li><button className="nav-libtn" onClick={() => navigate("/gallery-page")}>GALLERY</button></li>
             <li><button className="nav-libtn" onClick={() => navigate("/admin-registrations")}>NEW REGISTRATIONS</button></li>
            <li><button className="nav-libtn" onClick={() => navigate("/admin-users")}>USERS</button></li> 
-            <li><button className="nav-libtn" >PREMIUM</button></li>
+            <li><button className="nav-libtn" onClick={() => navigate("/premium-plans-admin")}>PREMIUM</button></li>
           </ul>
         </nav>
         <div className="user-menu">

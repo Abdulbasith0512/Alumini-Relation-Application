@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/user_navbar';
-
+import './purchasepremium.css'; // Assuming you have a CSS file for styling
 export default function PurchasePremium() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,31 +34,24 @@ export default function PurchasePremium() {
     }
   };
 
-  if (loading) return <p style={{ padding: 20 }}>Loading plans…</p>;
+  if (loading) return <p className="loading-text">Loading plans…</p>;
 
-  return (
-    <div>
-      <Navbar />
-      <div style={{ padding: 20, maxWidth: 600, margin: 'auto' }}>
-        <h2>Premium Plans</h2>
-        {plans.length === 0 && <p>No plans available.</p>}
-        {plans.map(p => (
-          <div key={p._id} style={{ border: '1px solid #ccc', padding: 15, marginBottom: 12 }}>
-            <h3>{p.name}</h3>
-            <p>Duration: {p.durationDays} days</p>
-            <p>Price: ₹{p.price}</p>
-            <button onClick={() => buy(p._id)} style={btn}>Buy</button>
-          </div>
-        ))}
-      </div>
+return (
+  <div>
+    <Navbar />
+    <div className="purchase-container">
+      <h2 className="purchase-title">Premium Plans</h2>
+      {plans.length === 0 && <p>No plans available.</p>}
+      {plans.map(p => (
+        <div key={p._id} className="plan-card">
+          <h3>{p.name}</h3>
+          <p>Duration: {p.durationDays} days</p>
+          <p>Price: ₹{p.price}</p>
+          <button onClick={() => buy(p._id)} className="buy-button">Buy</button>
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
 }
 
-const btn = {
-  padding: '8px 16px',
-  background: '#28a745',
-  color: '#fff',
-  border: 'none',
-  cursor: 'pointer'
-};

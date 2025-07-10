@@ -1,6 +1,6 @@
 import "./admin_registration_box.css";
 import axios from "axios";
-
+import React from "react";
 function Admin_registration_box({ user, onAction }) {
   const handleApprove = async () => {
     await axios.post(`http://localhost:3001/approve/${user._id}`);

@@ -1,5 +1,5 @@
 import "./admin_user_card.css";
-
+import React from "react"
 export default function AdminUserCard({ user, onClick }) {
   return (
     <div className="admin-user-card" onClick={() => onClick(user)}>

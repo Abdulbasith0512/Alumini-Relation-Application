@@ -458,9 +458,6 @@ app.post('/api/events', isAuthenticated, async (req, res) => {
   }
 });
 
-
-
-
 app.get("/events", async (req, res) => {
   try {
     const includePast = req.query.includePast === "true";
@@ -927,6 +924,90 @@ app.post('/api/subscribe/:planId', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+app.get('/admin/users/premium-status', async (req, res) => {
+  const User = require('./models/user'); // Adjust path if needed
+
+  try {
+    const users = await User.find().select('name email premium');
+
+    const result = users.map(u => {
+      const now = new Date();
+      const isActive =
+        u.premium?.startDate && u.premium?.endDate &&
+        now >= u.premium.startDate && now <= u.premium.endDate;
+
+      return {
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        premiumStatus: isActive ? 'Active' : 'Inactive',
+        startDate: u.premium?.startDate,
+        endDate: u.premium?.endDate,
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch premium status' });
+  }
+});
+
+
+app.get('/api/plans', async (req, res) => {
+  try {
+    const plans = await PremiumPlan.find();
+    res.json(plans);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch plans' });
+  }
+});
+
+app.post('/admin/plans', async (req, res) => {
+  const { name, durationDays, price, description = '' } = req.body;
+  try {
+    const plan = new PremiumPlan({ name, durationDays, price, description });
+    await plan.save();
+    res.json(plan);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create plan' });
+  }
+});
+
+app.delete('/api/plans/:id', async (req, res) => {
+  try {
+    await PremiumPlan.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Plan deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete plan' });
+  }
+});
+app.post('/api/subscribe/:id', isAuthenticated, async (req, res) => {
+  const Plan = require('./models/premiumPlan');
+
+  try {
+    const plan = await Plan.findById(req.params.id);
+    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+
+    const start = new Date();
+    const end = new Date(start);
+    end.setDate(start.getDate() + plan.durationDays);
+
+    req.user.premium = {
+      planId: plan._id,
+      startDate: start,
+      endDate: end
+    };
+
+    await req.user.save();
+
+    res.json({ message: `Subscribed to ${plan.name} plan until ${end.toDateString()}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Subscription failed' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });

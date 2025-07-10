@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import Navbar from '../components/user_navbar';
+import './eventenroll.css'; // Assuming you have a CSS file for styling
 function EventEnrollPage() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
@@ -32,19 +33,23 @@ function EventEnrollPage() {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      {event ? (
-        <>
-          <h2>{event.title}</h2>
-          <p>{event.description}</p>
-          <p><strong>Date:</strong> {event.date}</p>
-          <button onClick={handleEnroll}>Enroll</button>
-          {message && <p>{message}</p>}
-        </>
-      ) : (
-        <p>Loading event...</p>
-      )}
-    </div>
+   <div>
+  <Navbar />
+  <div className="enroll-container">
+    {event ? (
+      <>
+        <h2 className="enroll-title">{event.title}</h2>
+        <p className="enroll-description">{event.description}</p>
+        <p className="enroll-date"><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
+        <button className="enroll-button" onClick={handleEnroll}>Enroll</button>
+        {message && <p className="enroll-message">{message}</p>}
+      </>
+    ) : (
+      <p>Loading event...</p>
+    )}
+  </div>
+</div>
+
   );
 }
 

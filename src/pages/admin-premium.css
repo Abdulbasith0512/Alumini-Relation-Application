@@ -1,0 +1,42 @@
+.admin-premium-container {
+  padding: 20px;
+}
+
+.admin-premium-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.user-table {
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+thead {
+  background-color: #333;
+  color: white;
+}
+
+td, th {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.premium {
+  color: green;
+  font-weight: bold;
+}
+
+.non-premium {
+  color: red;
+  font-weight: bold;
+}

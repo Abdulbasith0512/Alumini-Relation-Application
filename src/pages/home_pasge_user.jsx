@@ -21,18 +21,9 @@ function HomeUserDashboard() {
       fetchUserDetails(parsedUser._id);
       fetchUserPosts(parsedUser._id);
       fetchEnrolledEvents(parsedUser._id);
-      fetchAppliedJobs(parsedUser._id); // ✅ This line was missing earlier
+      fetchAppliedJobs(parsedUser._id);
     }
   }, []);
-
-  const fetchAppliedJobs = async (idOrEmail) => {
-    try {
-      const res = await axios.get(`http://localhost:3001/applications/user/${idOrEmail}`);
-      setAppliedJobs(res.data);
-    } catch (err) {
-      console.error("Error fetching applied jobs", err);
-    }
-  };
 
   const fetchUserDetails = async (id) => {
     try {
@@ -58,6 +49,15 @@ function HomeUserDashboard() {
       setEnrolledEvents(res.data);
     } catch (err) {
       console.error("Error fetching enrolled events", err);
+    }
+  };
+
+  const fetchAppliedJobs = async (idOrEmail) => {
+    try {
+      const res = await axios.get(`http://localhost:3001/applications/user/${idOrEmail}`);
+      setAppliedJobs(res.data);
+    } catch (err) {
+      console.error("Error fetching applied jobs", err);
     }
   };
 
@@ -117,53 +117,49 @@ function HomeUserDashboard() {
     <div className="user-dashboard-container">
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="hero-section">
-        <div className="hero-text">
-          <h2>
-            Welcome Back, <span className="highlight">{user?.name || "User"}</span>
-          </h2>
-          <p>
-            {editableInfo.bio ||
-              "This user hasn't added a bio yet. Click edit to personalize your profile."}
-          </p>
-          <button className="edit-profile-btn" onClick={() => setEditing(!editing)}>
-            {editing ? "Cancel" : "Edit your Profile"}
-          </button>
-        </div>
-        <div className="hero-image-container">
-          <img
-            className="profile-photo"
-            src={
-              editableInfo?.profilePhoto
-                ? `http://localhost:3001/uploads/${editableInfo.profilePhoto}`
-                : "/default-profile.png"
-            }
-            alt={user?.name || "Profile photo"}
-          />
-        </div>
-      </div>
+  <div className="hero-section">
+  <div className="hero-text">
+    <h2>
+      Welcome Back, <span className="highlight">{user?.name || "User"}</span>
+    </h2>
+    <p>{editableInfo.bio || "Add a bio to personalize your profile."}</p>
+    <button className="btn primary-btn" onClick={() => setEditing(!editing)}>
+      {editing ? "Cancel" : "Edit your Profile"}
+    </button>
+  </div>
 
-      {/* Posts Section */}
-      <div className="posts-section">
-        <h3 className="section-title">Your Posts:</h3>
-        <div className="posts-grid">
-          {posts.length > 0 ? (
-            posts.map((post, i) => (
-              <PostCard
-                key={i}
-                name={user.name}
-                imageSrc={`http://localhost:3001/uploads/${post.photo}`}
-                content={post.bio}
-              />
-            ))
-          ) : (
-            <p style={{ color: "white" }}>No posts yet.</p>
-          )}
-        </div>
-      </div>
+  <div className="hero-image-container right-aligned">
+    <img
+      className="profile-photo"
+      src={
+        editableInfo?.profilePhoto
+          ? `http://localhost:3001/uploads/${editableInfo.profilePhoto}`
+          : "/default-profile.png"
+      }
+      alt="Profile"
+    />
+  </div>
+</div>
 
-      {/* Enrolled Events Section */}
+<div className="user-posts-section">
+  <h3 className="user-section-title">Your Posts</h3>
+  <div className="posts-grid">
+    {posts.length > 0 ? (
+      posts.map((post, i) => (
+        <PostCard
+          key={i}
+          name={user.name}
+          imageSrc={`http://localhost:3001/uploads/${post.photo}`}
+          content={post.bio}
+        />
+      ))
+    ) : (
+      <p className="placeholder">No posts yet.</p>
+    )}
+  </div>
+</div>
+
+
       <div className="personal-info-section">
         <h3>Enrolled Events:</h3>
         <div className="posts-grid">
@@ -172,37 +168,33 @@ function HomeUserDashboard() {
               <EventCard key={event._id} event={event} showEnroll={false} />
             ))
           ) : (
-            <p>No enrolled events yet.</p>
+            <p className="placeholder">No enrolled events yet.</p>
           )}
         </div>
       </div>
 
-      {/* Info Section */}
       <section className="info-card">
         <header className="info-header">
           <h3>Personal Information</h3>
-          <button className="edit-toggle" onClick={() => setEditing(!editing)}>
+          <button className="btn outline-btn" onClick={() => setEditing(!editing)}>
             {editing ? "Cancel" : "Edit"}
           </button>
         </header>
 
-        
-
-        {/* Editable Fields Grid */}
         <div className="info-grid">
           {[
-            { name: 'name', label: 'Name' },
-            { name: 'C_reg', label: 'College Reg. ID' },
-            { name: 'email', label: 'Email' },
-            { name: 'M_number', label: 'Mobile' },
-            { name: 'address', label: 'Address' },
-            { name: 'batchYear', label: 'Batch Year' },
-            { name: 'department', label: 'Department' },
-            { name: 'jobTitle', label: 'Job Title' },
-            { name: 'company', label: 'Company' },
-            { name: 'linkedin', label: 'LinkedIn' },
-            { name: 'github', label: 'GitHub' },
-            { name: 'bio', label: 'Bio', textarea: true },
+            { name: "name", label: "Name" },
+            { name: "C_reg", label: "College Reg. ID" },
+            { name: "email", label: "Email" },
+            { name: "M_number", label: "Mobile" },
+            { name: "address", label: "Address" },
+            { name: "batchYear", label: "Batch Year" },
+            { name: "department", label: "Department" },
+            { name: "jobTitle", label: "Job Title" },
+            { name: "company", label: "Company" },
+            { name: "linkedin", label: "LinkedIn" },
+            { name: "github", label: "GitHub" },
+            { name: "bio", label: "Bio", textarea: true },
           ].map((field) => (
             <div key={field.name} className="info-field">
               <label>{field.label}</label>
@@ -210,43 +202,45 @@ function HomeUserDashboard() {
                 field.textarea ? (
                   <textarea
                     name={field.name}
-                    value={editableInfo[field.name] || ''}
+                    value={editableInfo[field.name] || ""}
                     onChange={handleChange}
                     rows={3}
                   />
                 ) : (
                   <input
                     name={field.name}
-                    value={editableInfo[field.name] || ''}
+                    value={editableInfo[field.name] || ""}
                     onChange={handleChange}
                   />
                 )
               ) : (
-                <span className="info-value">
-                  {editableInfo[field.name] || '—'}
-                </span>
+                <span className="info-value">{editableInfo[field.name] || "—"}</span>
               )}
             </div>
           ))}
         </div>
 
-        {/* File Upload + Save Buttons */}
         {editing && (
           <>
             <div className="upload-row">
-              <label className="upload-label">
+              <label htmlFor="profile-upload" className="styled-upload-label">
                 Upload new profile photo
-                <input type="file" onChange={handleFileChange} />
               </label>
+              <input
+                type="file"
+                id="profile-upload"
+                className="hidden-file-input"
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+              {editableInfo?.profilePhotoPreview && (
+                <img src={editableInfo.profilePhotoPreview} className="profile-preview" alt="Preview" />
+              )}
             </div>
 
             <div className="action-row">
-              <button onClick={handleSave} className="save-btn">
-                Save Changes
-              </button>
-              <button onClick={() => setEditing(false)} className="cancel-btn">
-                Cancel
-              </button>
+              <button onClick={handleSave} className="btn green-btn">Save Changes</button>
+              <button onClick={() => setEditing(false)} className="btn cancel-btn">Cancel</button>
             </div>
           </>
         )}

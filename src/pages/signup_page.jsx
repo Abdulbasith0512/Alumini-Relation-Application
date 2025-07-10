@@ -20,45 +20,61 @@ function SignupPage() {
     password: ''
   });
   const [selectedFile, setSelectedFile] = useState(null);
-  const [customFields, setCustomFields] = useState({}); // key-value store for dynamic fields
+  const [customFields, setCustomFields] = useState({});
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios.get('http://localhost:3001/api/signup-config')
       .then(res => setConfig(res.data))
-      .catch(err => console.error("Error loading config", err));
+      .catch(err => {
+        console.error("Error loading config", err);
+        setErrorMsg("Could not load signup form configuration.");
+      });
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (selectedFile && selectedFile.size > 5 * 1024 * 1024) {
+      setErrorMsg("Profile photo must be under 5MB.");
+      return;
+    }
+
     const formData = new FormData();
 
-    // append core fields
     Object.entries(coreFields).forEach(([k, v]) => {
       formData.append(k, v);
     });
 
-    // append profile photo
     if (selectedFile) {
       formData.append('Profile_photo', selectedFile);
     }
 
-    // append dynamic custom fields
     Object.entries(customFields).forEach(([k, v]) => {
       if (v instanceof File) formData.append(k, v);
       else formData.append(k, String(v));
     });
 
+    setLoading(true);
     axios.post('http://localhost:3001/register', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
       .then(result => {
-        console.log(result.data);
-        navigate('/login');
+        setSuccessMsg("Registration submitted successfully!");
+        setTimeout(() => navigate('/login'), 1000);
       })
-      .catch(error => console.error('Registration Error:', error));
+      .catch(error => {
+        console.error('Registration Error:', error);
+        setErrorMsg(error.response?.data?.error || 'Registration failed');
+      })
+      .finally(() => setLoading(false));
   };
 
-  if (!config) return null;
+  if (!config || !config.visibleFields || !config.customFields) return null;
 
   return (
     <div>
@@ -72,11 +88,11 @@ function SignupPage() {
         <div className="signup-form-section">
           <h2>Sign Up</h2>
           <form onSubmit={handleSubmit}>
-            {/* Core Fields (conditionally rendered) */}
+            {/* Core Fields */}
             {config.visibleFields.name && (
               <div className="form-group">
                 <label>Name</label>
-                <input type="text" required
+                <input name="name" type="text" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, name: e.target.value }))} />
               </div>
             )}
@@ -84,7 +100,7 @@ function SignupPage() {
             {config.visibleFields.enrollmentNumber && (
               <div className="form-group">
                 <label>Enrollment Number</label>
-                <input type="text" required
+                <input name="enrollmentNumber" type="text" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, enrollmentNumber: e.target.value }))} />
               </div>
             )}
@@ -92,7 +108,7 @@ function SignupPage() {
             {config.visibleFields.email && (
               <div className="form-group">
                 <label>Email</label>
-                <input type="email" required
+                <input name="email" type="email" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, email: e.target.value }))} />
               </div>
             )}
@@ -101,8 +117,7 @@ function SignupPage() {
               {config.visibleFields.batchYear && (
                 <div className="form-group half-width">
                   <label>Batch Year</label>
-                  <select required
-                    onChange={(e) => setCoreFields(prev => ({ ...prev, batchYear: e.target.value }))}>
+                  <select required onChange={(e) => setCoreFields(prev => ({ ...prev, batchYear: e.target.value }))}>
                     <option value="">Select Year</option>
                     {Array.from({ length: 12 }, (_, i) => 2024 + i).map(year => (
                       <option key={year} value={year}>{year}</option>
@@ -114,8 +129,7 @@ function SignupPage() {
               {config.visibleFields.degree && (
                 <div className="form-group half-width">
                   <label>Degree</label>
-                  <select required
-                    onChange={(e) => setCoreFields(prev => ({ ...prev, degree: e.target.value }))}>
+                  <select required onChange={(e) => setCoreFields(prev => ({ ...prev, degree: e.target.value }))}>
                     <option value="">Select Degree</option>
                     <option value="B.Tech CSE">B.Tech CSE</option>
                     <option value="B.Tech ECE">B.Tech ECE</option>
@@ -132,7 +146,7 @@ function SignupPage() {
             {config.visibleFields.mobileNumber && (
               <div className="form-group">
                 <label>Mobile Number</label>
-                <input type="number" required
+                <input name="mobileNumber" type="number" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, mobileNumber: e.target.value }))} />
               </div>
             )}
@@ -140,7 +154,7 @@ function SignupPage() {
             {config.visibleFields.otp && (
               <div className="form-group">
                 <label>OTP</label>
-                <input type="text" required
+                <input name="otp" type="text" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, otp: e.target.value }))} />
               </div>
             )}
@@ -148,26 +162,27 @@ function SignupPage() {
             {config.visibleFields.password && (
               <div className="form-group">
                 <label>Password</label>
-                <input type="password" required
+                <input name="password" type="password" required
                   onChange={(e) => setCoreFields(prev => ({ ...prev, password: e.target.value }))} />
               </div>
             )}
 
-            {/* Profile Photo (if visible) */}
             {config.visibleFields.Profile_photo && (
               <div className="form-group">
                 <label>Profile Photo</label>
                 <input type="file"
+                  accept="image/png, image/jpeg"
                   onChange={(e) => setSelectedFile(e.target.files[0])} />
               </div>
             )}
 
-            {/* Custom Fields (dynamic) */}
+            {/* Dynamic Custom Fields */}
             {config.customFields.filter(f => f.visible).map(field => (
               <div className="form-group" key={field.key}>
-                <label>{field.label}</label>
+                <label>{field.label || field.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
                 {field.type === 'file' ? (
-                  <input type="file"
+                  <input
+                    type="file"
                     required={field.required}
                     onChange={(e) => setCustomFields(prev => ({ ...prev, [field.key]: e.target.files[0] }))} />
                 ) : (
@@ -179,8 +194,14 @@ function SignupPage() {
               </div>
             ))}
 
+            {/* Feedback Messages */}
+            {errorMsg && <p className="error-msg">{errorMsg}</p>}
+            {successMsg && <p className="success-msg">{successMsg}</p>}
+
             <div className="button-container">
-              <button type="submit" className="btn-user-login">Sign Up</button>
+              <button type="submit" className="btn-user-login" disabled={loading}>
+                {loading ? 'Submitting...' : 'Sign Up'}
+              </button>
             </div>
           </form>
         </div>

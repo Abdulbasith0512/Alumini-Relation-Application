@@ -1,16 +1,24 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Step 1
 import "./eventcards.css";
 
 function EventCard({
   event,
   isExpanded = false,
-  onSelect,      // <- new
-  onCollapse,    // <- new
+  onSelect,
+  onCollapse,
   showEnroll = true,
 }) {
+  const navigate = useNavigate(); // ✅ Step 2
+
   const handleClick = () => {
-    if (isExpanded) return;     // already large – ignore
-    onSelect(event._id);        // tell parent which card was clicked
+    if (isExpanded) return;
+    onSelect(event._id);
+  };
+
+  const handleEnrollClick = (e) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    navigate(`/events/enroll/${event._id}`); // ✅ Navigate to enroll page
   };
 
   return (
@@ -18,7 +26,6 @@ function EventCard({
       className={`event-card ${isExpanded ? "ec-expanded" : ""}`}
       onClick={handleClick}
     >
-      {/* BACK BUTTON – only visible when expanded */}
       {isExpanded && (
         <button className="ec-back-btn" onClick={onCollapse}>
           ← All events
@@ -47,7 +54,9 @@ function EventCard({
         <div className="event-footer">
           <span className="event-status active">ACTIVE</span>
           {showEnroll && (
-            <button className="event-button">ENROLL NOW</button>
+            <button onClick={handleEnrollClick} className="event-button">
+              ENROLL NOW
+            </button>
           )}
         </div>
       </div>

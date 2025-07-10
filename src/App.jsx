@@ -43,6 +43,7 @@ import SuperAdminLogin    from "./pages/super_admin_login";
 import SuperAdminDashboard from "./pages/super_admin_dashboard";
 import SuperAdminSignup   from "./pages/super_admin_signup";
 import PremiumPlansAdmin from "./pages/PremiumPlansAdmin";
+import AdminPremium from "./pages/adminpremium";
 const GOOGLE_CLIENT_ID =
   "121835700906-thqi0h9t9anvgodk7ptp7ah26lt90oks.apps.googleusercontent.com";
 
@@ -80,7 +81,7 @@ function App() {
             <Route path="/createjob"          element={<CreateJob />} />
             <Route path="/alert-page"         element={<AlertPageAdmin />} />
             <Route path="/gallery-page"       element={<GalleryPageAdmin />} />
-
+<Route path="/premium-plans-admin"  element={<AdminPremium />} />
             {/* Authenticated user */}
             <Route path="/home-register"  element={<HomePageUser />} />
             <Route path="/home-user"      element={<HomeUserDashboard />} />

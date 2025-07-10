@@ -10,11 +10,8 @@ function UserAlertsPage() {
   }, []);
 
   const fetchAlerts = async () => {
-    const currentUserId = localStorage.getItem('userId');
-    if (!currentUserId) return;
-
     try {
-      const res = await fetch(`http://localhost:3001/api/alerts?userId=${currentUserId}`);
+      const res = await fetch(`http://localhost:3001/api/alerts`);
       const data = await res.json();
       setAlerts(data);
     } catch (err) {

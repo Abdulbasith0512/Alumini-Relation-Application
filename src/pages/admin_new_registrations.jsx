@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/admin_navbar.jsx";
 import Admin_registration_box from "../components/admin_registration_box.jsx";
-
+import React from "react";
 function AdminNewRegistrations() {
   const [users, setUsers] = useState([]);
 

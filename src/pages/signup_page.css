@@ -115,6 +115,12 @@
   background-color: #000;
   color: #fff;
 }
+input[type="file"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-top: 8px;
+}
 
 /* Responsive design */
 @media (max-width: 768px) {

@@ -31,7 +31,7 @@ function CreateEvent() {
         formData.append(key, eventData[key]);
       }
 
-      await axios.post("http://localhost:3001/events", formData);
+      await axios.post("http://localhost:3001/api/events", formData);
       alert("Event created successfully!");
     } catch (err) {
       console.error("Event creation failed", err);

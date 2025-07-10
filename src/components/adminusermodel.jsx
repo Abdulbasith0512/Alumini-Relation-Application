@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./admin_user_modal.css";
-
+import React from "react";
 export default function AdminUserModal({ user, onClose, onAfterSave, onRestrict }) {
   const [formData, setFormData] = useState(null);
 

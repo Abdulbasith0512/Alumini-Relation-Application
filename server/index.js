@@ -39,9 +39,23 @@ const upload = multer({
 });
 
 
+app.get('/users/search', async (req, res) => {
+  const q = req.query.q || '';
+  try {
+    const users = await User.find(
+      { name: { $regex: q, $options: 'i' } },
+      '_id name profilePhoto'
+    );
+    res.json(users);
+  } catch (err) {
+    console.error('Error in /users/search:', err);
+    res.status(500).json({ error: 'Failed to search users' });
+  }
+});
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const finalUser = await User.findOne({ email });
     if (finalUser && finalUser.password === password) {
@@ -1007,6 +1021,92 @@ app.post('/api/subscribe/:id', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Subscription failed' });
   }
 });
+
+
+app.use(express.json());
+
+const Message = require("./models/message");   
+
+/* 🔍 SEARCH users by name */
+app.get('/users/search', async (req, res) => {
+  const q = req.query.q || '';
+  try {
+    const users = await User.find(
+      { name: { $regex: q, $options: 'i' } },
+      '_id name email profilePhoto' // include _id
+    );
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err.message);
+    console.error(err.stack); // <--- this helps pinpoint the error
+    res.status(500).json({ error: 'Could not fetch users' });
+  }
+});
+app.get('/messages/convo/:idA/:idB', async (req, res) => {
+  const { idA, idB } = req.params;
+
+  console.log("📥 Request received for conversation:");
+  console.log("➡️ idA:", idA);
+  console.log("➡️ idB:", idB);
+
+  // Validate ObjectIDs
+  if (
+    !mongoose.Types.ObjectId.isValid(idA) ||
+    !mongoose.Types.ObjectId.isValid(idB)
+  ) {
+    console.error("❌ Invalid user ID(s)");
+    return res.status(400).json({ error: 'Invalid user ID(s)' });
+  }
+
+  try {
+    // Convert strings to ObjectId explicitly
+    const objectIdA = new mongoose.Types.ObjectId(idA);
+    const objectIdB = new mongoose.Types.ObjectId(idB);
+
+    // Log for debug
+    console.log("🔍 Querying messages between:", objectIdA, objectIdB);
+
+    const convo = await Message.find({
+      $or: [
+        { senderId: objectIdA, receiverId: objectIdB },
+        { senderId: objectIdB, receiverId: objectIdA },
+      ],
+    }).sort({ timestamp: 1 });
+
+    console.log(`✅ Found ${convo.length} messages`);
+    res.json(convo);
+  } catch (err) {
+    console.error('💥 Error fetching conversation:', err.message);
+    console.error(err.stack);
+    res.status(500).json({ error: 'Could not fetch messages' });
+  }
+});
+
+/* 🚀 POST a message */
+app.post('/messages', async (req, res) => {
+  const { senderId, receiverId, message } = req.body;
+
+  if (
+    !mongoose.Types.ObjectId.isValid(senderId) ||
+    !mongoose.Types.ObjectId.isValid(receiverId)
+  ) {
+    return res.status(400).json({ error: 'Invalid sender or receiver ID' });
+  }
+
+  if (!message?.trim()) {
+    return res.status(400).json({ error: 'Message text required' });
+  }
+
+  try {
+    const msg = await Message.create({ senderId, receiverId, message });
+    res.status(201).json(msg);
+  } catch (err) {
+    console.error('Error sending message:', err.message);
+    console.error(err.stack);
+    res.status(500).json({ error: 'Could not send message' });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);

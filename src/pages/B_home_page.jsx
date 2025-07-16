@@ -2,9 +2,25 @@ import Navbar from "../components/navbar";
 import './B_home_page.css';
 import homePerson from '../assets/home_person.png';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { GalleryGrid } from './GalleryPage_admin'; 
 function HomePage() {
+  const [items, setItems] = useState([]);
+  
+    useEffect(() => {
+      const fetchGallery = async () => {
+        try {
+          const response = await fetch('http://localhost:3001/api/gallery');
+          const data = await response.json();
+          setItems(data);
+        } catch (error) {
+          console.error('Failed to fetch gallery:', error);
+        }
+      };
+  
+      fetchGallery();
+    }, []);
   return (
     <div>
       <Navbar />
@@ -18,7 +34,7 @@ function HomePage() {
       web applications and staying updated with the latest in tech.
     </p>
     <div class="buttons">
-      <button class="btn-dark">JOIN US</button>
+      <button onClick={() => navigate("/signup")} class="btn-dark">JOIN US</button>
       <button class="btn-outline">EXPLORE MORE</button>
     </div>
   </div>
@@ -45,6 +61,10 @@ function HomePage() {
   </div>
   
 </div>
+<div className="gallery-container">
+        <h1>Gallery</h1>
+        <GalleryGrid items={items} />
+      </div>
 
     </div>
   );

@@ -141,38 +141,6 @@ function HomeUserDashboard() {
   </div>
 </div>
 
-<div className="user-posts-section">
-  <h3 className="user-section-title">Your Posts</h3>
-  <div className="posts-grid">
-    {posts.length > 0 ? (
-      posts.map((post, i) => (
-        <PostCard
-          key={i}
-          name={user.name}
-          imageSrc={`http://localhost:3001/uploads/${post.photo}`}
-          content={post.bio}
-        />
-      ))
-    ) : (
-      <p className="placeholder">No posts yet.</p>
-    )}
-  </div>
-</div>
-
-
-      <div className="personal-info-section">
-        <h3>Enrolled Events:</h3>
-        <div className="posts-grid">
-          {enrolledEvents.length > 0 ? (
-            enrolledEvents.map((event) => (
-              <EventCard key={event._id} event={event} showEnroll={false} />
-            ))
-          ) : (
-            <p className="placeholder">No enrolled events yet.</p>
-          )}
-        </div>
-      </div>
-
       <section className="info-card">
         <header className="info-header">
           <h3>Personal Information</h3>
@@ -245,6 +213,39 @@ function HomeUserDashboard() {
           </>
         )}
       </section>
+
+<div className="user-posts-section">
+  <h3 className="user-section-title">Your Posts</h3>
+  <div className="posts-grid">
+    {posts.length > 0 ? (
+      posts.map((post, i) => (
+        <PostCard
+          key={i}
+          name={user.name}
+          imageSrc={`http://localhost:3001/uploads/${post.photo}`}
+          content={post.bio}
+        />
+      ))
+    ) : (
+      <p className="placeholder">No posts yet.</p>
+    )}
+  </div>
+</div>
+
+
+      <div className="personal-info-section">
+        <h3>Enrolled Events:</h3>
+        <div className="posts-grid">
+          {enrolledEvents.length > 0 ? (
+            enrolledEvents.map((event) => (
+              <EventCard key={event._id} event={event} showEnroll={false} />
+            ))
+          ) : (
+            <p className="placeholder">No enrolled events yet.</p>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }

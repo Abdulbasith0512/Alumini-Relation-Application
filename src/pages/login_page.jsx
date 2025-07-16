@@ -24,7 +24,9 @@ function LoginPage() {
     const data = await res.json();
 
     if (res.ok) {
+      // ✅ Store both user and user ID
       localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("id", data.user._id); // ← this line is critical
 
       if (data.approved) {
         navigate("/home-user"); // ✅ Approved → User Dashboard

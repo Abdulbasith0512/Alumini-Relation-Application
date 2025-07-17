@@ -3,8 +3,8 @@ import './B_home_page.css';
 import homePerson from '../assets/home_person.png';
 
 import React, { useEffect, useState } from 'react';
+import { GalleryGrid } from './gallerygrid'; 
 
-import { GalleryGrid } from './GalleryPage_admin'; 
 function HomePage() {
   const [items, setItems] = useState([]);
   

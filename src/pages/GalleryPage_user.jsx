@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/user_navbar';
-import { GalleryGrid } from './GalleryPage_admin';   // Reuse Swiper grid
+import { GalleryGrid } from './gallerygrid';   // Reuse Swiper grid
 import './Gallery.css';                              // Shared styles
 
 export default function GalleryPageUser() {

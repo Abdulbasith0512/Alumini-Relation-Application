@@ -131,10 +131,10 @@ body {
 }
 
 .info-card {
-  background-color: var(--bg-light);
+  background-color: var(--secondary-color);
   border-radius: var(--border-radius);
   padding: 32px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+
   max-width: 100%;
 }
 

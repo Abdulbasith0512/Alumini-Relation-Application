@@ -10,14 +10,15 @@ export default function Messages() {
   const myId = localStorage.getItem('id');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
-  const [peer, setPeer] = useState(null); // { _id, name }
+  const [chatUsers, setChatUsers] = useState([]); // 🔹 New state
+  const [peer, setPeer] = useState(null);
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const bottomRef = useRef(null);
 
-  /* 🔍 Search users by name */
+  // 🔍 Search users by name
   const searchUsers = async () => {
     const q = query.trim();
     if (!q) return;
@@ -29,7 +30,23 @@ export default function Messages() {
     }
   };
 
-  /* 💬 Fetch messages every 3s */
+  // 🔁 Load recent chat users on mount
+  useEffect(() => {
+    if (!myId) return;
+
+    const fetchChatUsers = async () => {
+      try {
+        const { data } = await axios.get(`${API}/messages/chat-users/${myId}`);
+        setChatUsers(data);
+      } catch (err) {
+        console.error('Failed to fetch chat users:', err);
+      }
+    };
+
+    fetchChatUsers();
+  }, [myId]);
+
+  // 💬 Fetch messages every 3s
   useEffect(() => {
     if (!peer || !myId) return;
 
@@ -48,20 +65,13 @@ export default function Messages() {
     return () => clearInterval(id);
   }, [peer, myId]);
 
-  /* 📨 Send message */
+  // 📨 Send message
   const send = async () => {
     const msg = text.trim();
     if (!msg || !peer || !myId || myId.length !== 24 || peer._id.length !== 24) {
-      console.warn('Invalid message payload:', { myId, peer, msg });
       setError('Invalid message input');
       return;
     }
-
-    console.log("Sending message:", {
-      senderId: myId,
-      receiverId: peer._id,
-      message: msg
-    });
 
     setLoading(true);
     setError('');
@@ -72,7 +82,12 @@ export default function Messages() {
         receiverId: peer._id,
         message: msg,
       });
+
       setText('');
+
+      // 🔁 Refresh chat list in case this is a new peer
+      const { data } = await axios.get(`${API}/messages/chat-users/${myId}`);
+      setChatUsers(data);
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err.response?.data?.error || 'Failed to send');
@@ -95,16 +110,38 @@ export default function Messages() {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && searchUsers()}
           />
+
           <div className="msg-userlist">
-            {results.map(u => (
-              <div
-                key={u._id}
-                className={`msg-user ${peer?._id === u._id ? 'active' : ''}`}
-                onClick={() => setPeer(u)}
-              >
-                {u.name}
-              </div>
-            ))}
+            {chatUsers.length > 0 && (
+              <>
+                <div className="msg-label">Recent Chats</div>
+                {chatUsers.map(u => (
+                  <div
+                    key={u._id}
+                    className={`msg-user ${peer?._id === u._id ? 'active' : ''}`}
+                    onClick={() => setPeer(u)}
+                  >
+                    {u.name}
+                  </div>
+                ))}
+                <hr />
+              </>
+            )}
+
+            {results.length > 0 && (
+              <>
+                <div className="msg-label">Search Results</div>
+                {results.map(u => (
+                  <div
+                    key={u._id}
+                    className={`msg-user ${peer?._id === u._id ? 'active' : ''}`}
+                    onClick={() => setPeer(u)}
+                  >
+                    {u.name}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </aside>
 

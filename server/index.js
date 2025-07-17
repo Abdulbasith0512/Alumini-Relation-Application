@@ -1106,6 +1106,40 @@ app.post('/messages', async (req, res) => {
     res.status(500).json({ error: 'Could not send message' });
   }
 });
+app.get('/messages/chat-users/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    const objectId = new mongoose.Types.ObjectId(userId);
+
+    const messages = await Message.find({
+      $or: [{ senderId: objectId }, { receiverId: objectId }],
+    }).select('senderId receiverId -_id'); // we only need user IDs
+
+    const userIdsSet = new Set();
+
+    messages.forEach(msg => {
+      if (msg.senderId.toString() !== userId) userIdsSet.add(msg.senderId.toString());
+      if (msg.receiverId.toString() !== userId) userIdsSet.add(msg.receiverId.toString());
+    });
+
+    const chatPartnerIds = Array.from(userIdsSet);
+
+    // Now fetch full user info
+    const users = await User.find({ _id: { $in: chatPartnerIds } }).select(
+      'name email profilePhoto'
+    );
+
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching chat users:', err.message);
+    res.status(500).json({ error: 'Could not fetch chat partners' });
+  }
+});
 
 
 app.listen(PORT, () => {

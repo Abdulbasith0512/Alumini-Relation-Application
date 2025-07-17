@@ -57,3 +57,28 @@
   color: #333;
   border: 1px solid #ccc;
 }
+/* src/pages/admin_jobs.css */
+.admin-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.admin-job-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+
+.admin-applications {
+  background: #f7f7f7;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 12px;
+}
+
+.admin-application {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}

@@ -115,11 +115,9 @@ Password: admin123
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
 
 ## 📬 Contact
 
-Created by **[Vashist](https://github.com/vashist171)**  
+Created by **[Abdul Basith]([https://github.com/Abdulbasith0512])**  
 Feel free to reach out for collaboration or feedback!
